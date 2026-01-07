@@ -1,0 +1,9 @@
+.fuzzy-text {
+  display: inline-block;
+  cursor: pointer;
+}
+
+.fuzzy-text__char {
+  display: inline-block;
+  will-change: transform;
+}

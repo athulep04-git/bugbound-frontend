@@ -1,0 +1,6 @@
+.decrypted-text {
+  display: inline-block;
+  font-family: monospace;
+  cursor: pointer;
+  white-space: nowrap;
+}
