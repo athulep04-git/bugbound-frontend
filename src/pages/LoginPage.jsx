@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { loginUserAPI } from "../services/allAPIs";
+import { googleUserLoginAPI, loginUserAPI } from "../services/allAPIs";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -67,7 +67,54 @@ function LoginPage({ setIsLoggedIn }) {
    const handleGoogleLogin= async (credentialResponse) =>{
     const decode=jwtDecode(credentialResponse.credential)
     console.log(decode);
-   }
+    try{
+      const response= await googleUserLoginAPI({username:decode.name,email:decode.email,password:'googlepswd',profile:decode.picture})
+      console.log(response);
+      if (response.status === 200) {
+          sessionStorage.setItem("token", response.data.token);
+          sessionStorage.setItem("userDetails",JSON.stringify(response.data.
+existingUser));
+          console.log(response.data);
+          
+          if (response.data.existingUser.role == "Admin") {
+            setTimeout(() => {
+              navigate("/admin");
+            }, 5000);
+          } else {
+            setTimeout(() => {
+              navigate("/");
+            }, 5000);
+          }
+          toast.success(response.data.message, {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: false,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+            transition: Bounce,
+          });
+        } else {
+          toast.warn(response.response.data, {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: false,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+            transition: Bounce,
+          });
+        }
+    }
+    catch(err){
+      console.log(err);
+      
+    }
+  }
   return (
     <div
       className="min-h-screen flex items-center justify-center px-4
