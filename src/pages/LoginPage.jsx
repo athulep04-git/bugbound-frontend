@@ -3,7 +3,8 @@ import { loginUserAPI } from "../services/allAPIs";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+import { GoogleLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
 function LoginPage({ setIsLoggedIn }) {
   const navigate = useNavigate();
 
@@ -63,6 +64,10 @@ function LoginPage({ setIsLoggedIn }) {
     }
   };
 
+   const handleGoogleLogin= async (credentialResponse) =>{
+    const decode=jwtDecode(credentialResponse.credential)
+    console.log(decode);
+   }
   return (
     <div
       className="min-h-screen flex items-center justify-center px-4
@@ -113,6 +118,15 @@ function LoginPage({ setIsLoggedIn }) {
           >
             Login
           </button>
+            <GoogleLogin
+    onSuccess={credentialResponse => {
+      console.log(credentialResponse);
+      handleGoogleLogin(credentialResponse)
+    }}
+    onError={() => {
+      console.log('Login Failed');
+    }}
+  />
         </form>
       </div>
 
