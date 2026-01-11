@@ -1,74 +1,113 @@
-import React from "react";
-import { Link, NavLink } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import {
+  Avatar,
+  Button,
+  Dropdown,
+  DropdownDivider,
+  DropdownHeader,
+  DropdownItem,
+  Navbar,
+  NavbarBrand,
+  NavbarCollapse,
+  NavbarToggle,
+} from "flowbite-react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 
-function Navbar() {
+function NavbarComponent() {
+  const [token, setToken] = useState("");
+  const [user, setUser] = useState({});
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    setToken(sessionStorage.getItem("token"));
+    setUser(JSON.parse(sessionStorage.getItem("userDetails")));
+  }, []);
+
+  const handleLogout = () => {
+    sessionStorage.clear();
+    navigate("/");
+  };
+
+  const navClass = ({ isActive }) =>
+    `text-white ${isActive ? "font-bold underline" : ""}`;
+
   return (
-    <nav className="fixed top-0 w-full z-50 
-    bg-white/90 dark:bg-gray-900/90 
-    backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 shadow-md">
-
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
-
-        
-        <Link
-          to="/"
-          className="text-2xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text"
-        >
+    <Navbar fluid className="!bg-gray-900 fixed w-full z-50">
+      <NavbarBrand as={Link} to={token ? "/dashboard" : "/"}>
+        <span className="self-center whitespace-nowrap text-xl font-bold text-white">
           BugBound Hub
-        </Link>
+        </span>
+      </NavbarBrand>
 
-        <div className="flex items-center gap-10">
-
-          <NavLink
-            to="/"
-            className={({ isActive }) =>
-              `font-medium transition ${
-                isActive
-                  ? "text-blue-600 dark:text-purple-400"
-                  : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-purple-400"
-              }`
+      <div className="flex md:order-2 gap-3">
+        {token ? (
+          <Dropdown
+            arrowIcon={false}
+            inline
+            label={
+              <img
+                src={
+                  user?.profile ||
+                  "https://media.istockphoto.com/id/1495088043/vector/user-profile-icon-avatar-or-person-icon-profile-picture-portrait-symbol-default-portrait.jpg"
+                }
+                alt="profile"
+                width="40"
+                className="rounded-full cursor-pointer"
+                referrerPolicy="no-referrer"
+              />
             }
           >
-            Home
-          </NavLink>
+            <DropdownHeader>
+              <span className="block text-sm">{user?.username}</span>
+              <span className="block truncate text-sm font-medium">
+                {user?.email}
+              </span>
+            </DropdownHeader>
 
-          <NavLink
-            to="/login"
-            className={({ isActive }) =>
-              `font-medium transition ${
-                isActive
-                  ? "text-blue-600 dark:text-purple-400"
-                  : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-purple-400"
-              }`
-            }
-          >
-            Login
-          </NavLink>
+            <Link to="/dashboard">
+              <DropdownItem>Dashboard</DropdownItem>
+            </Link>
 
-          <NavLink
-            to="/register"
-            className={({ isActive }) =>
-              `font-medium transition ${
-                isActive
-                  ? "text-blue-600 dark:text-purple-400"
-                  : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-purple-400"
-              }`
-            }
-          >
-            Register
-          </NavLink>
+            <Link to="/profile">
+              <DropdownItem>Profile</DropdownItem>
+            </Link>
 
-          <Link
-            to="/register"
-            className="px-6 py-2 rounded-full text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90 shadow-md transition"
-          >
-            Get Started
+            <DropdownDivider />
+
+            <DropdownItem onClick={handleLogout} className="text-red-600">
+              Logout
+            </DropdownItem>
+          </Dropdown>
+        ) : (
+          <Link to="/login">
+            <Button gradientDuoTone="purpleToBlue">Login</Button>
           </Link>
+        )}
 
-        </div>
+        <NavbarToggle />
       </div>
-    </nav>
+
+      <NavbarCollapse>
+        <NavLink to="/" className={navClass}>
+          Home
+        </NavLink>
+
+        {token && (
+          <>
+            <NavLink to="/errors" className={navClass}>
+              Errors
+            </NavLink>
+            <NavLink to="/bounties" className={navClass}>
+              Bug Bounty
+            </NavLink>
+            <NavLink to="/leaderboard" className={navClass}>
+              Leaderboard
+            </NavLink>
+          </>
+        )}
+      </NavbarCollapse>
+    </Navbar>
   );
 }
 
-export default Navbar;
+export default NavbarComponent;

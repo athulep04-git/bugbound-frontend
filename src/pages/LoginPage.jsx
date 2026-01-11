@@ -5,7 +5,7 @@ import { ToastContainer, toast, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
-function LoginPage({ setIsLoggedIn }) {
+function LoginPage() {
   const navigate = useNavigate();
 
 //create a state to hold user data
@@ -72,8 +72,7 @@ function LoginPage({ setIsLoggedIn }) {
       console.log(response);
       if (response.status === 200) {
           sessionStorage.setItem("token", response.data.token);
-          sessionStorage.setItem("userDetails",JSON.stringify(response.data.
-existingUser));
+          sessionStorage.setItem("userDetails",JSON.stringify(response.data.existingUser));
           console.log(response.data);
           
           if (response.data.existingUser.role == "Admin") {
@@ -82,7 +81,7 @@ existingUser));
             }, 5000);
           } else {
             setTimeout(() => {
-              navigate("/");
+              navigate("/dashboard");
             }, 5000);
           }
           toast.success(response.data.message, {
