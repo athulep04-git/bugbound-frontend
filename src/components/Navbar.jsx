@@ -9,12 +9,10 @@ function Navbar() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // get user details safely
     const storedUser = sessionStorage.getItem("userDetails");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
-
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setOpen(false);
@@ -45,7 +43,6 @@ function Navbar() {
       backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 shadow-md"
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
-        {/* LOGO */}
         <Link
           to={token ? "/dashboard" : "/"}
           className="text-2xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text"
@@ -54,7 +51,6 @@ function Navbar() {
         </Link>
 
         <div className="flex items-center gap-8">
-          {/* BEFORE LOGIN */}
           {!token && (
             <>
               <NavLink to="/" className={navLinkClass}>
@@ -80,7 +76,7 @@ function Navbar() {
             </>
           )}
 
-          {/* AFTER LOGIN */}
+          
           {token && (
             <>
               <NavLink to="/dashboard" className={navLinkClass}>
@@ -99,7 +95,7 @@ function Navbar() {
                 Leaderboard
               </NavLink>
 
-              {/* PROFILE DROPDOWN */}
+              
               <div className="relative" ref={dropdownRef}>
                 <button onClick={() => setOpen(!open)}>
                   <img
@@ -120,7 +116,7 @@ function Navbar() {
                     border border-gray-200 dark:border-gray-700 
                     rounded-xl shadow-lg overflow-hidden"
                   >
-                    {/* USER INFO */}
+                    
                     {user?.email && (
                       <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
