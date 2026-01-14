@@ -2,26 +2,32 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 
 function Navbar() {
-  const token = sessionStorage.getItem("token");
+  const [token, setToken] = useState("");
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState({});
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedUser = sessionStorage.getItem("userDetails");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setOpen(false);
-      }
-    };
+  const storedToken = sessionStorage.getItem("token");
+  const storedUser = sessionStorage.getItem("userDetails");
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  setToken(storedToken);
+
+  if (storedUser) {
+    setUser(JSON.parse(storedUser));
+  }
+
+  const handleClickOutside = (e) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+      setOpen(false);
+    }
+  };
+
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => document.removeEventListener("mousedown", handleClickOutside);
+}, []);
+
 
   const handleLogout = () => {
     sessionStorage.clear();
