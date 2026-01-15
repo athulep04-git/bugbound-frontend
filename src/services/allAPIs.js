@@ -17,6 +17,12 @@ export const googleUserLoginAPI = async(reqBody)=>{
     return await commonAPI('POST',`${serverURL}/api/googlelogin`,reqBody,{})
 }
 
+//add bug
 export const addBugAPI = async(reqBody,reqHeader)=>{
     return await commonAPI('POST',`${serverURL}/api/addbug`,reqBody,reqHeader)
+}
+
+//all bugs
+export const getAllBugsAPI = async(reqHeader)=>{
+    return await commonAPI('GET',`${serverURL}/api/getbugs`,{},reqHeader)
 }
