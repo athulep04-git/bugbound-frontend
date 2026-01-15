@@ -26,7 +26,7 @@ function LoginPage() {
         if (response.status === 200) {
           // store token
           sessionStorage.setItem("token", response.data.token);
-           if (response.data.activeUser.role === "Admin") {
+           if (response.data.existingUser.role === "Admin") {
             setTimeout(() => {
               navigate("/admin");
             }, 2500);
