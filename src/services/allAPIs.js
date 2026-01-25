@@ -26,3 +26,14 @@ export const addBugAPI = async(reqBody,reqHeader)=>{
 export const getAllBugsAPI = async(reqHeader)=>{
     return await commonAPI('GET',`${serverURL}/api/getbugs`,{},reqHeader)
 }
+
+//get a bug details
+export const getABugAPI = async(id, reqHeader) => {
+  return await commonAPI("GET", `${serverURL}/api/getbug/${id}`, {}, reqHeader);
+};
+
+//add bounty
+export const addBountyAPI = async (reqBody, reqHeader) => {
+  return await commonAPI("POST", `${serverURL}/api/addbounty`, reqBody, reqHeader);
+};
+
