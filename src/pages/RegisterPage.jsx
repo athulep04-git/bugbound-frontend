@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import { registerUserAPI } from "../services/allAPIs";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { ToastContainer, toast, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 function RegisterPage() {
-  //create a state to hold user data
   const [userData, setUserData] = useState({
     username: "",
     email: "",
@@ -26,42 +25,42 @@ function RegisterPage() {
         theme: "colored",
         transition: Bounce,
       });
-    } else {
-      //call register user api
-      try {
-        const response = await registerUserAPI(userData);
-        console.log(response);
+      return;
+    }
 
-        if (response.status === 200 || response.status === 201) {
-          toast.success(response.data.message, {
-            position: "top-center",
-            autoClose: 2500,
-            hideProgressBar: false,
-            closeOnClick: false,
-            pauseOnHover: true,
-            draggable: true,
-            theme: "colored",
-            transition: Bounce,
-          });
+    try {
+      const response = await registerUserAPI(userData);
+      console.log(response);
 
-          setTimeout(() => {
-            navigate("/login");
-          }, 2500);
-        } else {
-          toast.warn(response.response.data, {
-            position: "top-center",
-            autoClose: 2500,
-            hideProgressBar: false,
-            closeOnClick: false,
-            pauseOnHover: true,
-            draggable: true,
-            theme: "colored",
-            transition: Bounce,
-          });
-        }
-      } catch (err) {
-        console.log(err);
+      if (response.status === 200 || response.status === 201) {
+        toast.success(response.data.message, {
+          position: "top-center",
+          autoClose: 2500,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "colored",
+          transition: Bounce,
+        });
+
+        setTimeout(() => {
+          navigate("/login");
+        }, 2500);
       }
+    } catch (err) {
+      console.log(err);
+
+      toast.warn(err?.response?.data || "Registration failed", {
+        position: "top-center",
+        autoClose: 2500,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "colored",
+        transition: Bounce,
+      });
     }
   };
 
@@ -98,9 +97,7 @@ function RegisterPage() {
           <input
             type="email"
             placeholder="Email"
-            onChange={(e) =>
-              setUserData({ ...userData, email: e.target.value })
-            }
+            onChange={(e) => setUserData({ ...userData, email: e.target.value })}
             className="w-full p-3 rounded-lg border border-gray-300"
           />
 
@@ -126,12 +123,12 @@ function RegisterPage() {
 
         <p className="text-center mt-5 text-gray-600">
           Already have an account?{" "}
-          <a
-            href="/login"
+          <Link
+            to="/login"
             className="text-blue-600 font-medium hover:underline"
           >
             Login
-          </a>
+          </Link>
         </p>
       </div>
 

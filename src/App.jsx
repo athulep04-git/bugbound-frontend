@@ -4,7 +4,7 @@ import "./App.css";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import Navbar from "./components/Navbar";
-import DashboardNavbar from "./components/DashboardNavbar";
+
 import Footer from "./components/Footer";
 import Loader from "./components/Loader";
 import LandingPage from "./pages/LandingPage";
@@ -35,7 +35,7 @@ import AdminComplaints from "./pages/AdminComplaints";
 import AdminSettings from "./pages/AdminSettings";
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -60,55 +60,48 @@ function App() {
       {loading && <Loader />}
 
       {!loading && (
-        <>
-          {isLoggedIn ? (
-            <DashboardNavbar onLogout={() => setIsLoggedIn(false)} />
-          ) : (
-            <Navbar />
-          )}
-          <div className="pt-20 min-h-screen bg-gray-50 dark:bg-gray-900">
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route
-                path="/login"
-                element={<LoginPage setIsLoggedIn={setIsLoggedIn} />}
-              />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/post-error" element={<PostError />} />
-              <Route path="/errors" element={<Errors />} />
-              <Route path="/errors/:id" element={<ErrorDetails />} />
-              <Route path="/leaderboard" element={<Leaderboard />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/debugger/:id" element={<DebuggerProfile />} />
-              <Route path="/my-errors" element={<MyErrors />} />
-              <Route path="/contact" element={<Contact />} />
+  <>
+    <Navbar />
 
-              {/* ADMIN ROUTES */}
-<Route path="/admin" element={<AdminLayout />}>
-  <Route index element={<AdminDashboard />} />
-  <Route path="users" element={<AdminUsers />} />
-  <Route path="bugs" element={<AdminBugs />} />
-  <Route path="complaints" element={<AdminComplaints />} />
-  <Route path="settings" element={<AdminSettings />} />
-</Route>
+    <div className="pt-20 min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/post-error" element={<PostError />} />
+        <Route path="/errors" element={<Errors />} />
+        <Route path="/errors/:id" element={<ErrorDetails />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/debugger/:id" element={<DebuggerProfile />} />
+        <Route path="/my-errors" element={<MyErrors />} />
+        <Route path="/contact" element={<Contact />} />
 
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="bugs" element={<AdminBugs />} />
+          <Route path="complaints" element={<AdminComplaints />} />
+          <Route path="settings" element={<AdminSettings />} />
+        </Route>
 
-              <Route path="/bounties" element={<Bounties />} />
-              <Route path="/bounties/:id" element={<BountyDetails />} />
-              <Route path="/workspace/:id" element={<FixWorkspace />} />
-              <Route path="/mytasks" element={<MyTasks />} />
-              <Route path="/debuggerwork/:id" element={<Debugger />} />
-              <Route path="/post-bounty" element={<PostBounty />} />
-              <Route path="/completed" element={<CompletedTasks />} />
+        <Route path="/bounties" element={<Bounties />} />
+        <Route path="/bounties/:id" element={<BountyDetails />} />
+        <Route path="/workspace/:id" element={<FixWorkspace />} />
+        <Route path="/mytasks" element={<MyTasks />} />
+        <Route path="/debuggerwork/:id" element={<Debugger />} />
+        <Route path="/post-bounty" element={<PostBounty />} />
+        <Route path="/completed" element={<CompletedTasks />} />
 
-              <Route path="*" element={<PageNotFound />} />
-            </Routes>
-          </div>
+        <Route path="*" element={<PageNotFound />} />
+      </Routes>
+    </div>
 
-          <Footer />
-        </>
-      )}
+    <Footer />
+  </>
+)}
+
     </>
   );
 }

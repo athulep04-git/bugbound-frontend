@@ -9,28 +9,34 @@ function Navbar() {
   const navigate = useNavigate();
 
   useEffect(() => {
-  const storedToken = sessionStorage.getItem("token");
-  const storedUser = sessionStorage.getItem("userDetails");
+    const refreshAuth = () => {
+      const storedToken = sessionStorage.getItem("token");
+      const storedUser = sessionStorage.getItem("userDetails");
 
-  setToken(storedToken);
+      setToken(storedToken || "");
+      setUser(storedUser ? JSON.parse(storedUser) : {});
+    };
 
-  if (storedUser) {
-    setUser(JSON.parse(storedUser));
-  }
+    refreshAuth();
 
-  const handleClickOutside = (e) => {
-    if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-      setOpen(false);
-    }
-  };
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
 
-  document.addEventListener("mousedown", handleClickOutside);
-  return () => document.removeEventListener("mousedown", handleClickOutside);
-}, []);
+    window.addEventListener("authChanged", refreshAuth);
+    document.addEventListener("mousedown", handleClickOutside);
 
+    return () => {
+      window.removeEventListener("authChanged", refreshAuth);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleLogout = () => {
     sessionStorage.clear();
+    window.dispatchEvent(new Event("authChanged"));
     setOpen(false);
     navigate("/");
   };
@@ -82,7 +88,6 @@ function Navbar() {
             </>
           )}
 
-          
           {token && (
             <>
               <NavLink to="/dashboard" className={navLinkClass}>
@@ -101,7 +106,6 @@ function Navbar() {
                 Leaderboard
               </NavLink>
 
-              
               <div className="relative" ref={dropdownRef}>
                 <button onClick={() => setOpen(!open)}>
                   <img
@@ -122,7 +126,6 @@ function Navbar() {
                     border border-gray-200 dark:border-gray-700 
                     rounded-xl shadow-lg overflow-hidden"
                   >
-                    
                     {user?.email && (
                       <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-100">

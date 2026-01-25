@@ -5,115 +5,133 @@ import { ToastContainer, toast, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
+
 function LoginPage() {
   const navigate = useNavigate();
 
-//create a state to hold user data
   const [userData, setUserData] = useState({
     email: "",
     password: "",
   });
+
   const handleLogin = async () => {
     const { email, password } = userData;
+
     if (!email || !password) {
       alert("Please fill all the fields");
-    } else {
-      //call login user api
-      try {
-        const response = await loginUserAPI({ email, password });
-        console.log(response);
+      return;
+    }
 
-        if (response.status === 200) {
-          // store token
-          sessionStorage.setItem("token", response.data.token);
-           if (response.data.existingUser.role === "Admin") {
-            setTimeout(() => {
-              navigate("/admin");
-            }, 2500);
-          } else {
-            setTimeout(() => {
-              navigate("/dashboard");
-            }, 2500);
-          }
-          toast.success(response.data.message, {
-            position: "top-center",
-            autoClose: 2500,
-            hideProgressBar: false,
-            closeOnClick: false,
-            pauseOnHover: true,
-            draggable: true,
-            theme: "colored",
-            transition: Bounce,
-          });
-        setIsLoggedIn(true);    
+    try {
+      const response = await loginUserAPI({ email, password });
+      console.log(response);
+
+      if (response.status === 200) {
+        sessionStorage.setItem("token", response.data.token);
+        sessionStorage.setItem(
+          "userDetails",
+          JSON.stringify(response.data.existingUser)
+        );
+
+        window.dispatchEvent(new Event("authChanged"));
+
+        toast.success(response.data.message, {
+          position: "top-center",
+          autoClose: 2500,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "colored",
+          transition: Bounce,
+        });
+
+        if (response.data.existingUser.role === "Admin") {
+          setTimeout(() => {
+            navigate("/admin");
+          }, 2500);
         } else {
-          toast.warn(response.response.data, {
-            position: "top-center",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: false,
-            pauseOnHover: true,
-            draggable: true,
-            theme: "colored",
-            transition: Bounce,
-          });
+          setTimeout(() => {
+            navigate("/dashboard");
+          }, 2500);
         }
-      } catch (err) {
-        console.log(err);
       }
+    } catch (err) {
+      console.log(err);
+
+      toast.warn(err?.response?.data || "Login failed", {
+        position: "top-center",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "colored",
+        transition: Bounce,
+      });
     }
   };
 
-   const handleGoogleLogin= async (credentialResponse) =>{
-    const decode=jwtDecode(credentialResponse.credential)
+  const handleGoogleLogin = async (credentialResponse) => {
+    const decode = jwtDecode(credentialResponse.credential);
     console.log(decode);
-    try{
-      const response= await googleUserLoginAPI({username:decode.name,email:decode.email,password:'googlepswd',profile:decode.picture})
+
+    try {
+      const response = await googleUserLoginAPI({
+        username: decode.name,
+        email: decode.email,
+        password: "googlepswd",
+        profile: decode.picture,
+      });
+
       console.log(response);
+
       if (response.status === 200) {
-          sessionStorage.setItem("token", response.data.token);
-          sessionStorage.setItem("userDetails",JSON.stringify(response.data.existingUser));
-          console.log(response.data);
-          
-          if (response.data.existingUser.role == "Admin") {
-            setTimeout(() => {
-              navigate("/admin");
-            }, 5000);
-          } else {
-            setTimeout(() => {
-              navigate("/dashboard");
-            }, 5000);
-          }
-          toast.success(response.data.message, {
-            position: "top-center",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: false,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            transition: Bounce,
-          });
+        sessionStorage.setItem("token", response.data.token);
+        sessionStorage.setItem(
+          "userDetails",
+          JSON.stringify(response.data.existingUser)
+        );
+
+        window.dispatchEvent(new Event("authChanged"));
+
+        toast.success(response.data.message, {
+          position: "top-center",
+          autoClose: 2500,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "colored",
+          transition: Bounce,
+        });
+
+        if (response.data.existingUser.role === "Admin") {
+          setTimeout(() => {
+            navigate("/admin");
+          }, 2500);
         } else {
-          toast.warn(response.response.data, {
-            position: "top-center",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: false,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            transition: Bounce,
-          });
+          setTimeout(() => {
+            navigate("/dashboard");
+          }, 2500);
         }
-    }
-    catch(err){
+      }
+    } catch (err) {
       console.log(err);
-      
+
+      toast.warn(err?.response?.data || "Google login failed", {
+        position: "top-center",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "colored",
+        transition: Bounce,
+      });
     }
-  }
+  };
+
   return (
     <div
       className="min-h-screen flex items-center justify-center px-4
@@ -125,12 +143,15 @@ function LoginPage() {
     >
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
 
-      <div className="relative w-full max-w-md p-8 bg-white/95 shadow-2xl
-                      border border-gray-200 rounded-2xl">
-
-        <h2 className="text-3xl font-bold text-center mb-6
+      <div
+        className="relative w-full max-w-md p-8 bg-white/95 shadow-2xl
+                      border border-gray-200 rounded-2xl"
+      >
+        <h2
+          className="text-3xl font-bold text-center mb-6
                        bg-gradient-to-r from-blue-600 to-purple-600
-                       text-transparent bg-clip-text">
+                       text-transparent bg-clip-text"
+        >
           Login
         </h2>
 
@@ -138,9 +159,7 @@ function LoginPage() {
           <input
             type="email"
             placeholder="Email"
-            onChange={(e) =>
-              setUserData({ ...userData, email: e.target.value })
-            }
+            onChange={(e) => setUserData({ ...userData, email: e.target.value })}
             className="w-full p-3 rounded-lg border border-gray-300
                        outline-none focus:ring-2 focus:ring-blue-500"
           />
@@ -164,15 +183,16 @@ function LoginPage() {
           >
             Login
           </button>
-            <GoogleLogin
-    onSuccess={credentialResponse => {
-      console.log(credentialResponse);
-      handleGoogleLogin(credentialResponse)
-    }}
-    onError={() => {
-      console.log('Login Failed');
-    }}
-  />
+
+          <GoogleLogin
+            onSuccess={(credentialResponse) => {
+              console.log(credentialResponse);
+              handleGoogleLogin(credentialResponse);
+            }}
+            onError={() => {
+              console.log("Login Failed");
+            }}
+          />
         </form>
       </div>
 
