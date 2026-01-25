@@ -11,17 +11,17 @@ function RegisterPage() {
     password: "",
   });
 
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
 
   const handleRegister = async () => {
-    if (!userData.username || !userData.email || !userData.password) {
+    const { username, email, password } = userData;
+
+    if (!username || !email || !password) {
       toast.warn("Please fill all the fields", {
         position: "top-center",
         autoClose: 2500,
-        hideProgressBar: false,
-        closeOnClick: false,
-        pauseOnHover: true,
-        draggable: true,
         theme: "colored",
         transition: Bounce,
       });
@@ -29,19 +29,22 @@ function RegisterPage() {
     }
 
     try {
+      setLoading(true);
+
       const response = await registerUserAPI(userData);
-      console.log(response);
 
       if (response.status === 200 || response.status === 201) {
         toast.success(response.data.message, {
           position: "top-center",
           autoClose: 2500,
-          hideProgressBar: false,
-          closeOnClick: false,
-          pauseOnHover: true,
-          draggable: true,
           theme: "colored",
           transition: Bounce,
+        });
+
+        setUserData({
+          username: "",
+          email: "",
+          password: "",
         });
 
         setTimeout(() => {
@@ -49,18 +52,14 @@ function RegisterPage() {
         }, 2500);
       }
     } catch (err) {
-      console.log(err);
-
       toast.warn(err?.response?.data || "Registration failed", {
         position: "top-center",
         autoClose: 2500,
-        hideProgressBar: false,
-        closeOnClick: false,
-        pauseOnHover: true,
-        draggable: true,
         theme: "colored",
         transition: Bounce,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -88,6 +87,7 @@ function RegisterPage() {
           <input
             type="text"
             placeholder="Full Name"
+            value={userData.username}
             onChange={(e) =>
               setUserData({ ...userData, username: e.target.value })
             }
@@ -97,6 +97,7 @@ function RegisterPage() {
           <input
             type="email"
             placeholder="Email"
+            value={userData.email}
             onChange={(e) => setUserData({ ...userData, email: e.target.value })}
             className="w-full p-3 rounded-lg border border-gray-300"
           />
@@ -104,6 +105,7 @@ function RegisterPage() {
           <input
             type="password"
             placeholder="Password"
+            value={userData.password}
             onChange={(e) =>
               setUserData({ ...userData, password: e.target.value })
             }
@@ -112,21 +114,19 @@ function RegisterPage() {
 
           <button
             type="button"
+            disabled={loading}
             onClick={handleRegister}
             className="w-full py-3 rounded-lg text-white
                        bg-gradient-to-r from-blue-600 to-purple-600
-                       hover:opacity-90 transition font-medium"
+                       hover:opacity-90 transition font-medium disabled:opacity-60"
           >
-            Register
+            {loading ? "Registering..." : "Register"}
           </button>
         </form>
 
         <p className="text-center mt-5 text-gray-600">
           Already have an account?{" "}
-          <Link
-            to="/login"
-            className="text-blue-600 font-medium hover:underline"
-          >
+          <Link to="/login" className="text-blue-600 font-medium hover:underline">
             Login
           </Link>
         </p>

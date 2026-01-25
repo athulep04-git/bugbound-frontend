@@ -18,13 +18,17 @@ function LoginPage() {
     const { email, password } = userData;
 
     if (!email || !password) {
-      alert("Please fill all the fields");
+      toast.warn("Please fill all the fields", {
+        position: "top-center",
+        autoClose: 2500,
+        theme: "colored",
+        transition: Bounce,
+      });
       return;
     }
 
     try {
       const response = await loginUserAPI({ email, password });
-      console.log(response);
 
       if (response.status === 200) {
         sessionStorage.setItem("token", response.data.token);
@@ -38,34 +42,22 @@ function LoginPage() {
         toast.success(response.data.message, {
           position: "top-center",
           autoClose: 2500,
-          hideProgressBar: false,
-          closeOnClick: false,
-          pauseOnHover: true,
-          draggable: true,
           theme: "colored",
           transition: Bounce,
         });
 
-        if (response.data.existingUser.role === "Admin") {
-          setTimeout(() => {
+        setTimeout(() => {
+          if (response.data.existingUser.role === "Admin") {
             navigate("/admin");
-          }, 2500);
-        } else {
-          setTimeout(() => {
+          } else {
             navigate("/dashboard");
-          }, 2500);
-        }
+          }
+        }, 2500);
       }
     } catch (err) {
-      console.log(err);
-
       toast.warn(err?.response?.data || "Login failed", {
         position: "top-center",
         autoClose: 4000,
-        hideProgressBar: false,
-        closeOnClick: false,
-        pauseOnHover: true,
-        draggable: true,
         theme: "colored",
         transition: Bounce,
       });
@@ -73,18 +65,25 @@ function LoginPage() {
   };
 
   const handleGoogleLogin = async (credentialResponse) => {
-    const decode = jwtDecode(credentialResponse.credential);
-    console.log(decode);
-
     try {
+      if (!credentialResponse?.credential) {
+        toast.warn("Google login failed", {
+          position: "top-center",
+          autoClose: 3000,
+          theme: "colored",
+          transition: Bounce,
+        });
+        return;
+      }
+
+      const decode = jwtDecode(credentialResponse.credential);
+
       const response = await googleUserLoginAPI({
         username: decode.name,
         email: decode.email,
         password: "googlepswd",
         profile: decode.picture,
       });
-
-      console.log(response);
 
       if (response.status === 200) {
         sessionStorage.setItem("token", response.data.token);
@@ -98,34 +97,22 @@ function LoginPage() {
         toast.success(response.data.message, {
           position: "top-center",
           autoClose: 2500,
-          hideProgressBar: false,
-          closeOnClick: false,
-          pauseOnHover: true,
-          draggable: true,
           theme: "colored",
           transition: Bounce,
         });
 
-        if (response.data.existingUser.role === "Admin") {
-          setTimeout(() => {
+        setTimeout(() => {
+          if (response.data.existingUser.role === "Admin") {
             navigate("/admin");
-          }, 2500);
-        } else {
-          setTimeout(() => {
+          } else {
             navigate("/dashboard");
-          }, 2500);
-        }
+          }
+        }, 2500);
       }
     } catch (err) {
-      console.log(err);
-
       toast.warn(err?.response?.data || "Google login failed", {
         position: "top-center",
         autoClose: 4000,
-        hideProgressBar: false,
-        closeOnClick: false,
-        pauseOnHover: true,
-        draggable: true,
         theme: "colored",
         transition: Bounce,
       });
@@ -159,6 +146,7 @@ function LoginPage() {
           <input
             type="email"
             placeholder="Email"
+            value={userData.email}
             onChange={(e) => setUserData({ ...userData, email: e.target.value })}
             className="w-full p-3 rounded-lg border border-gray-300
                        outline-none focus:ring-2 focus:ring-blue-500"
@@ -167,6 +155,7 @@ function LoginPage() {
           <input
             type="password"
             placeholder="Password"
+            value={userData.password}
             onChange={(e) =>
               setUserData({ ...userData, password: e.target.value })
             }
@@ -185,12 +174,14 @@ function LoginPage() {
           </button>
 
           <GoogleLogin
-            onSuccess={(credentialResponse) => {
-              console.log(credentialResponse);
-              handleGoogleLogin(credentialResponse);
-            }}
+            onSuccess={handleGoogleLogin}
             onError={() => {
-              console.log("Login Failed");
+              toast.warn("Google Login Failed", {
+                position: "top-center",
+                autoClose: 3000,
+                theme: "colored",
+                transition: Bounce,
+              });
             }}
           />
         </form>

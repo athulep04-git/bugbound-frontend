@@ -33,6 +33,9 @@ import AdminUsers from "./pages/AdminUsers";
 import AdminBugs from "./pages/AdminBugs";
 import AdminComplaints from "./pages/AdminComplaints";
 import AdminSettings from "./pages/AdminSettings";
+import EditError from "./pages/EditError";
+import BugRequests from "./pages/BugRequests";
+import EditBounty from "./pages/EditBounty";
 
 function App() {
 
@@ -93,7 +96,9 @@ function App() {
         <Route path="/debuggerwork/:id" element={<Debugger />} />
         <Route path="/post-bounty" element={<PostBounty />} />
         <Route path="/completed" element={<CompletedTasks />} />
-
+        <Route path="/edit-error/:id" element={<EditError />} />
+        <Route path="/bug-requests/:id" element={<BugRequests />} />
+        <Route path="/edit-bounty/:id" element={<EditBounty />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </div>
