@@ -30,7 +30,6 @@ function PostBounty() {
       alert("Only 3 images allowed");
       return;
     }
-
     const imgArray = [...bountyDetails.UploadedImages, file];
     setBountyDetails({ ...bountyDetails, UploadedImages: imgArray });
 
@@ -108,7 +107,7 @@ function PostBounty() {
       </div>
 
       <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 border rounded-2xl p-8 shadow">
-        <form className="space-y-6" onSubmit={handleAddBounty}>
+        <form className="space-y-6" >
           <div>
             <label className="block font-medium text-gray-700 dark:text-gray-300 mb-1">
               Project Title
@@ -252,7 +251,8 @@ function PostBounty() {
             </button>
 
             <button
-              type="submit"
+              type="button"
+              onClick={handleAddBounty}
               className="px-8 py-3 rounded-xl
                          bg-gradient-to-r from-blue-600 to-purple-600
                          text-white font-medium

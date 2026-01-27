@@ -58,3 +58,8 @@ export const getMyBugsAPI = async (reqHeader) => {
 export const getMyBountiesAPI = async (reqHeader) => {
   return await commonAPI("GET", `${serverURL}/api/mybounties`, {}, reqHeader);
 };
+
+//edit bug
+export const editBugAPI = async (id, reqBody, reqHeader) => {
+  return await commonAPI("PUT",`${serverURL}/api/editbug/${id}`,reqBody,reqHeader)
+};
