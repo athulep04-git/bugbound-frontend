@@ -1,36 +1,56 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
+import { getUserProfileAPI } from "../services/allAPIs";
 
 function Navbar() {
   const [token, setToken] = useState("");
-  const [open, setOpen] = useState(false);
   const [user, setUser] = useState({});
+  const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
+  const getProfileImage = (profile) => {
+    if (!profile) {
+      return "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_640.png";
+    }
+    if (profile.startsWith("http")) return profile;
+    return `http://localhost:3000/uploads/${profile}`;
+  };
+
+  const fetchUser = async () => {
+    const storedToken = sessionStorage.getItem("token");
+    if (!storedToken) {
+      setToken("");
+      setUser({});
+      return;
+    }
+
+    setToken(storedToken);
+
+    try {
+      const reqHeader = { Authorization: `Bearer ${storedToken}` };
+      const result = await getUserProfileAPI(reqHeader);
+      if (result.status === 200) setUser(result.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   useEffect(() => {
-    const refreshAuth = () => {
-      const storedToken = sessionStorage.getItem("token");
-      const storedUser = sessionStorage.getItem("userDetails");
+    fetchUser();
 
-      setToken(storedToken || "");
-      setUser(storedUser ? JSON.parse(storedUser) : {});
-    };
-
-    refreshAuth();
-
-    const handleClickOutside = (e) => {
+    const handleOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setOpen(false);
       }
     };
 
-    window.addEventListener("authChanged", refreshAuth);
-    document.addEventListener("mousedown", handleClickOutside);
+    window.addEventListener("authChanged", fetchUser);
+    document.addEventListener("mousedown", handleOutside);
 
     return () => {
-      window.removeEventListener("authChanged", refreshAuth);
-      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("authChanged", fetchUser);
+      document.removeEventListener("mousedown", handleOutside);
     };
   }, []);
 
@@ -55,9 +75,12 @@ function Navbar() {
       backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 shadow-md"
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
+
         <Link
           to={token ? "/dashboard" : "/"}
-          className="text-2xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text"
+          className="text-2xl font-extrabold 
+          bg-gradient-to-r from-blue-600 to-purple-600 
+          text-transparent bg-clip-text"
         >
           BugBound Hub
         </Link>
@@ -65,17 +88,9 @@ function Navbar() {
         <div className="flex items-center gap-8">
           {!token && (
             <>
-              <NavLink to="/" className={navLinkClass}>
-                Home
-              </NavLink>
-
-              <NavLink to="/login" className={navLinkClass}>
-                Login
-              </NavLink>
-
-              <NavLink to="/register" className={navLinkClass}>
-                Register
-              </NavLink>
+              <NavLink to="/" className={navLinkClass}>Home</NavLink>
+              <NavLink to="/login" className={navLinkClass}>Login</NavLink>
+              <NavLink to="/register" className={navLinkClass}>Register</NavLink>
 
               <Link
                 to="/register"
@@ -90,30 +105,16 @@ function Navbar() {
 
           {token && (
             <>
-              <NavLink to="/dashboard" className={navLinkClass}>
-                Dashboard
-              </NavLink>
-
-              <NavLink to="/errors" className={navLinkClass}>
-                Errors
-              </NavLink>
-
-              <NavLink to="/bounties" className={navLinkClass}>
-                Bug Bounty
-              </NavLink>
-
-              <NavLink to="/leaderboard" className={navLinkClass}>
-                Leaderboard
-              </NavLink>
+              <NavLink to="/dashboard" className={navLinkClass}>Dashboard</NavLink>
+              <NavLink to="/errors" className={navLinkClass}>Errors</NavLink>
+              <NavLink to="/bounties" className={navLinkClass}>Bug Bounty</NavLink>
+              <NavLink to="/leaderboard" className={navLinkClass}>Leaderboard</NavLink>
 
               <div className="relative" ref={dropdownRef}>
                 <button onClick={() => setOpen(!open)}>
                   <img
-                    src={
-                      user?.profile ||
-                      "https://media.istockphoto.com/id/1495088043/vector/user-profile-icon-avatar-or-person-icon-profile-picture-portrait-symbol-default-portrait.jpg"
-                    }
-                    alt="Profile"
+                    src={getProfileImage(user?.profile)}
+                    alt="profile"
                     className="w-10 h-10 rounded-full border border-gray-300 dark:border-gray-600"
                     referrerPolicy="no-referrer"
                   />
@@ -126,21 +127,20 @@ function Navbar() {
                     border border-gray-200 dark:border-gray-700 
                     rounded-xl shadow-lg overflow-hidden"
                   >
-                    {user?.email && (
-                      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                          {user.username}
-                        </p>
-                        <p className="text-xs text-gray-500 truncate">
-                          {user.email}
-                        </p>
-                      </div>
-                    )}
+                    <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {user.username}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {user.email}
+                      </p>
+                    </div>
 
                     <Link
                       to="/profile"
                       onClick={() => setOpen(false)}
-                      className="block px-4 py-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+                      className="block px-4 py-3 text-sm 
+                      hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
                       Profile
                     </Link>
@@ -148,17 +148,10 @@ function Navbar() {
                     <Link
                       to="/my-errors"
                       onClick={() => setOpen(false)}
-                      className="block px-4 py-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+                      className="block px-4 py-3 text-sm 
+                      hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
                       My Errors
-                    </Link>
-
-                    <Link
-                      to="/mytasks"
-                      onClick={() => setOpen(false)}
-                      className="block px-4 py-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
-                      My Tasks
                     </Link>
 
                     <button

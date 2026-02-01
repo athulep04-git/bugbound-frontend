@@ -1,18 +1,71 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Tabs, TabItem, Card } from "flowbite-react";
 import { HiUserCircle, HiClipboardList, HiStar } from "react-icons/hi";
 import EditProfile from "../components/EditProfile";
+import { getUserProfileAPI } from "../services/allAPIs";
 
 function Profile() {
   const [openEdit, setOpenEdit] = useState(false);
+  const [token, setToken] = useState("");
+  const [user, setUser] = useState({});
+  useEffect(() => {
+    setUser(JSON.parse(sessionStorage.getItem("userDetails")));
+    setToken(sessionStorage.getItem("token"));
+  }, []);
+
+  const getProfileImage = (profile) => {
+  if (!profile) {
+    return "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_640.png";
+  }
+
+  if (profile.startsWith("http")) {
+    return profile;
+  }
+
+  return `http://localhost:3000/uploads/${profile}`;
+};
+
+   const getProfile = async () => {
+    try {
+      const reqHeader = {
+        Authorization: `Bearer ${token}`,
+      };
+
+      const result = await getUserProfileAPI(reqHeader);
+
+      if (result.status === 200) {
+        setUser(result.data);
+        
+        
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+   useEffect(() => {
+  if (token) {
+    getProfile();
+  }
+
+  const handleProfileUpdate = () => {
+    getProfile();
+  };
+
+  window.addEventListener("authChanged", handleProfileUpdate);
+
+  return () => {
+    window.removeEventListener("authChanged", handleProfileUpdate);
+  };
+}, [token]);
+
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
 
-      {/* PROFILE HEADER */}
+
       <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 h-60">
 
-        {/* EDIT BUTTON */}
+  
         <div className="absolute top-6 right-6 z-10">
           <button
             onClick={() => setOpenEdit(true)}
@@ -22,51 +75,51 @@ function Profile() {
           </button>
         </div>
 
-        {/* PROFILE IMAGE */}
+    
         <div className="absolute left-1/2 -bottom-16 transform -translate-x-1/2">
           <img
-            src="https://media.istockphoto.com/id/1495088043/vector/user-profile-icon-avatar-or-person-icon-profile-picture-portrait-symbol-default-portrait.jpg?s=612x612&w=0&k=20&c=dhV2p1JwmloBTOaGAtaA3AW1KSnjsdMt7-U_3EZElZ0="
-            alt="Profile"
-            className="w-32 h-32 rounded-full border-4 border-white shadow-xl"
-          />
+  src={getProfileImage(user?.profile)}
+  alt="profile"
+  className="w-32 h-32 rounded-full border-4 border-white shadow-xl"
+  referrerPolicy="no-referrer"
+/>
+
+
         </div>
       </div>
 
-      {/* USER INFO */}
+
       <div className="mt-20 text-center">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Athul
+          {user.username}
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          MERN Stack Developer · Debugger
+          {user.title}
         </p>
       </div>
 
-      {/* STATS */}
       <div className="max-w-5xl mx-auto mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6 px-6">
         <Card className="text-center">
-          <h3 className="text-2xl font-bold">42</h3>
+          <h3 className="text-2xl font-bold">{user.totalFixes}</h3>
           <p className="text-gray-500">Errors Fixed</p>
         </Card>
         <Card className="text-center">
-          <h3 className="text-2xl font-bold">4.8 ⭐</h3>
+          <h3 className="text-2xl font-bold">{user.rating} ⭐</h3>
           <p className="text-gray-500">Rating</p>
         </Card>
         <Card className="text-center">
-          <h3 className="text-2xl font-bold">₹18,500</h3>
-          <p className="text-gray-500">Earnings</p>
+          <h3 className="text-2xl font-bold">18,500</h3>
+          <p className="text-gray-500">Points</p>
         </Card>
       </div>
 
-      {/* TABS */}
       <div className="max-w-5xl mx-auto mt-12 px-6 pb-16">
         <Tabs aria-label="Profile Tabs" variant="fullWidth">
 
           <TabItem title="About" icon={HiUserCircle}>
             <Card>
               <p className="text-gray-700 dark:text-gray-300">
-                I specialize in fixing backend issues, authentication bugs,
-                and performance problems.
+                {user.bio}
               </p>
             </Card>
           </TabItem>
@@ -92,7 +145,6 @@ function Profile() {
         </Tabs>
       </div>
 
-      {/* EDIT PROFILE MODAL */}
       <EditProfile open={openEdit} onClose={() => setOpenEdit(false)} />
 
     </div>

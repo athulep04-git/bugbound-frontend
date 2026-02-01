@@ -4,6 +4,8 @@ import "./App.css";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import Navbar from "./components/Navbar";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import Footer from "./components/Footer";
 import Loader from "./components/Loader";
@@ -106,7 +108,11 @@ function App() {
     <Footer />
   </>
 )}
-
+  <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        theme="colored"
+      />
     </>
   );
 }

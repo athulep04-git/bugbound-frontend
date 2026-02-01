@@ -69,3 +69,23 @@ export const editBugAPI = async (id, reqBody, reqHeader) => {
 export const editBountyAPI = async (id, reqBody, reqHeader) => {
   return await commonAPI("PUT",`${serverURL}/api/editbounty/${id}`,reqBody,reqHeader);
 };
+
+//delete bug
+export const deleteBugAPI = async (id, reqHeader) => {
+  return await commonAPI("DELETE",`${serverURL}/api/deletebug/${id}`,{},reqHeader);
+};
+
+//getlogin user details
+export const getUserProfileAPI = async (reqHeader)=> {
+  return await commonAPI("GET",`${serverURL}/api/profile`,{},reqHeader);
+};
+
+//update login user
+export const updateProfileAPI = async (reqBody, reqHeader) => {
+  return await commonAPI("PUT", `${serverURL}/api/profile`, reqBody, reqHeader);
+};
+
+//get leaderboard
+export const getLeaderboardAPI = async () => {
+  return await commonAPI("GET", `${serverURL}/api/leaderboard`, {}, {});
+};
