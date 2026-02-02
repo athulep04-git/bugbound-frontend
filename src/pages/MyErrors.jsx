@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { getMyBugsAPI, getMyBountiesAPI } from "../services/allAPIs";
+import {
+  getMyBugsAPI,
+  getMyBountiesAPI,
+  deleteBugAPI,
+} from "../services/allAPIs";
 
 function MyErrors() {
   const [activeTab, setActiveTab] = useState("errors");
@@ -20,9 +24,7 @@ function MyErrors() {
       const reqHeader = {
         Authorization: `Bearer ${token}`,
       };
-
       const result = await getMyBugsAPI(reqHeader);
-
       if (result.status === 200) {
         setMyBugs(result.data);
       }
@@ -36,9 +38,7 @@ function MyErrors() {
       const reqHeader = {
         Authorization: `Bearer ${token}`,
       };
-
       const result = await getMyBountiesAPI(reqHeader);
-
       if (result.status === 200) {
         setMyBounties(result.data);
       }
@@ -65,12 +65,25 @@ function MyErrors() {
       confirmButtonText: "Yes, delete it",
     }).then(async (result) => {
       if (result.isConfirmed) {
-        Swal.fire("Deleted!", "Your item has been deleted.", "success");
+        try {
+          const reqHeader = {
+            Authorization: `Bearer ${token}`,
+          };
 
-        if (type === "bug") {
-          setMyBugs((prev) => prev.filter((item) => item._id !== id));
-        } else {
-          setMyBounties((prev) => prev.filter((item) => item._id !== id));
+          if (type === "bug") {
+            const res = await deleteBugAPI(id, reqHeader);
+
+            if (res.status === 200) {
+              setMyBugs((prev) =>
+                prev.filter((item) => item._id !== id)
+              );
+
+              Swal.fire("Deleted!", "Bug deleted successfully.", "success");
+            }
+          }
+        } catch (err) {
+          Swal.fire("Error", "Delete failed", "error");
+          console.log(err);
         }
       }
     });
@@ -91,7 +104,7 @@ function MyErrors() {
               : "bg-white border"
           }`}
         >
-          🐞 My Errors
+           My Errors
         </button>
 
         <button
@@ -102,14 +115,14 @@ function MyErrors() {
               : "bg-white border"
           }`}
         >
-          🏆 My Bounties
+           My Bounties
         </button>
       </div>
 
       <div className="max-w-4xl mx-auto space-y-6">
         {activeTab === "errors" && (
           <>
-            {myBugs?.length > 0 ? (
+            {myBugs.length > 0 ? (
               myBugs.map((bug) => (
                 <div
                   key={bug._id}
@@ -139,14 +152,14 @@ function MyErrors() {
                         onClick={() => navigate(`/edit-error/${bug._id}`)}
                         className="px-3 py-1 bg-gray-200 rounded"
                       >
-                        ✏️ Edit
+                        ✏️
                       </button>
 
                       <button
                         onClick={() => handleDelete("bug", bug._id)}
                         className="px-3 py-1 bg-red-600 text-white rounded"
                       >
-                        🗑️ Delete
+                        🗑️ 
                       </button>
                     </div>
 
@@ -169,7 +182,7 @@ function MyErrors() {
 
         {activeTab === "bounties" && (
           <>
-            {myBounties?.length > 0 ? (
+            {myBounties.length > 0 ? (
               myBounties.map((bounty) => (
                 <div
                   key={bounty._id}
@@ -193,14 +206,14 @@ function MyErrors() {
                         onClick={() => navigate(`/edit-bounty/${bounty._id}`)}
                         className="px-3 py-1 bg-gray-200 rounded"
                       >
-                        ✏️ Edit
+                        ✏️
                       </button>
 
                       <button
                         onClick={() => handleDelete("bounty", bounty._id)}
                         className="px-3 py-1 bg-red-600 text-white rounded"
                       >
-                        🗑️ Delete
+                        🗑️
                       </button>
                     </div>
 

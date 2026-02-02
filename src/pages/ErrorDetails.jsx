@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getABugAPI } from "../services/allAPIs";
+import { getABugAPI, sendProposalAPI } from "../services/allAPIs";
 import { serverURL } from "../services/serverURL";
+import { toast } from "react-toastify";
 
 function ErrorDetails() {
   const { id } = useParams();
@@ -9,77 +10,152 @@ function ErrorDetails() {
   const [token, setToken] = useState("");
   const [bug, setBug] = useState(null);
   const [requested, setRequested] = useState(false);
+  const [user, setUser] = useState({});
 
-  useEffect(() => {
-    setToken(sessionStorage.getItem("token"));
-  }, []);
+  // proposal form state
+  const [proposalData, setProposalData] = useState({
+    message: "",
+    proposedAmount: "",
+    estimatedTime: "",
+  });
 
+  /* ---------------- LOAD TOKEN & USER ---------------- */
   useEffect(() => {
-    const alreadyRequested = sessionStorage.getItem(`requested_${id}`);
-    if (alreadyRequested) {
-      setRequested(true);
+    const storedUser = JSON.parse(sessionStorage.getItem("userDetails"));
+    const storedToken = sessionStorage.getItem("token");
+
+    setUser(storedUser);
+    setToken(storedToken);
+
+    if (storedUser?.email) {
+      setRequested(
+        sessionStorage.getItem(`proposal_${id}_${storedUser.email}`) === "true"
+      );
     }
   }, [id]);
 
+  /* ---------------- GET BUG DETAILS ---------------- */
   const getBugDetails = async () => {
-    try {
-      const reqHeader = {
-        Authorization: `Bearer ${token}`,
-      };
+    const reqHeader = {
+      Authorization: `Bearer ${token}`,
+    };
 
-      const result = await getABugAPI(id, reqHeader);
+    const result = await getABugAPI(id, reqHeader);
+
+    // success
+    if (result?.status === 200) {
       setBug(result.data);
-    } catch (err) {
-      console.log(err);
+    } else {
+      toast.error("Failed to load bug details");
     }
   };
 
   useEffect(() => {
-    if (token) getBugDetails();
+    if (token) {
+      getBugDetails();
+    }
   }, [token]);
 
-  const handleRequestFix = () => {
-    setRequested(true);
-    sessionStorage.setItem(`requested_${id}`, "true");
+  /* ---------------- SEND PROPOSAL ---------------- */
+  const handleRequestFix = async () => {
+    // already requested (user-specific)
+    if (requested) {
+      toast.info("You have already sent a proposal for this bug");
+      return;
+    }
+
+    if (!token || !user?.email) {
+      toast.error("Authentication error");
+      return;
+    }
+
+    if (bug.userMail === user.email) {
+      toast.warn("You cannot send a request to your own bug");
+      return;
+    }
+
+    const { message, proposedAmount, estimatedTime } = proposalData;
+
+    // validation
+    if (!message || !proposedAmount || !estimatedTime) {
+      toast.warn("Please fill all fields before sending request");
+      return;
+    }
+
+    const reqHeader = {
+      Authorization: `Bearer ${token}`,
+    };
+
+    const reqBody = {
+      bugId: id,
+      message,
+      proposedAmount,
+      estimatedTime,
+    };
+
+    const result = await sendProposalAPI(reqBody, reqHeader);
+
+    // SUCCESS
+    if (result?.status === 201 || result?.status === 200) {
+      toast.success("Fix request sent successfully");
+      setRequested(true);
+      sessionStorage.setItem(
+        `proposal_${id}_${user.email}`,
+        "true"
+      );
+      return;
+    }
+
+    // DUPLICATE (backend 400)
+    if (result?.response?.status === 400) {
+      toast.info(result.response.data);
+      setRequested(true);
+      sessionStorage.setItem(
+        `proposal_${id}_${user.email}`,
+        "true"
+      );
+      return;
+    }
+
+    // UNAUTHORIZED
+    if (result?.response?.status === 403) {
+      toast.warn(result.response.data);
+      return;
+    }
+
+    toast.error("Failed to send request");
   };
 
-  const handleCancelRequest = () => {
-    setRequested(false);
-    sessionStorage.removeItem(`requested_${id}`);
-  };
-
+  /* ---------------- LOADING ---------------- */
   if (!bug) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600 dark:text-gray-300">
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
         Loading bug details...
       </div>
     );
   }
 
+  /* ---------------- UI ---------------- */
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 md:p-10">
       <div className="max-w-5xl mx-auto mb-6">
-        <Link
-          to="/errors"
-          className="text-blue-600 dark:text-purple-400 font-medium hover:underline"
-        >
+        <Link to="/errors" className="text-blue-600 font-medium hover:underline">
           ← Back to Errors
         </Link>
       </div>
 
-      <div className="max-w-5xl mx-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-8 shadow-sm">
+      <div className="max-w-5xl mx-auto bg-white dark:bg-gray-800 border rounded-2xl p-8 shadow-sm">
+        {/* HEADER */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              {bug.title}
-            </h1>
+            <h1 className="text-3xl font-bold">{bug.title}</h1>
             <p className="text-sm text-gray-500 mt-1">
               Posted by: <span className="font-medium">{bug.userMail}</span>
             </p>
           </div>
 
           <div className="flex gap-3 flex-wrap">
-            <span className="px-4 py-1 rounded-full text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
+            <span className="px-4 py-1 rounded-full text-sm bg-gray-100">
               {bug.category}
             </span>
 
@@ -101,57 +177,97 @@ function ErrorDetails() {
           </div>
         </div>
 
+        {/* DESCRIPTION */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            Description
-          </h2>
-          <p className="text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line">
+          <h2 className="text-lg font-semibold mb-2">Description</h2>
+          <p className="text-gray-600 whitespace-pre-line">
             {bug.description}
           </p>
         </div>
 
+        {/* FIX BUDGET */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            Fix Budget
-          </h2>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">
-            ₹{bug.fixBudget}
-          </p>
+          <h2 className="text-lg font-semibold mb-2">Fix Budget</h2>
+          <p className="text-2xl font-bold">₹{bug.fixBudget}</p>
         </div>
 
-        <div className="mt-8 flex flex-col sm:flex-row gap-4">
+        {/* PROPOSAL FORM */}
+        {!requested && (
+          <div className="mt-8 space-y-4">
+            <textarea
+              placeholder="Explain how you will fix this bug"
+              className="w-full p-3 border rounded-lg"
+              rows={3}
+              value={proposalData.message}
+              onChange={(e) =>
+                setProposalData({
+                  ...proposalData,
+                  message: e.target.value,
+                })
+              }
+            />
+
+            <input
+              type="number"
+              placeholder="Proposed Amount (₹)"
+              className="w-full p-3 border rounded-lg"
+              value={proposalData.proposedAmount}
+              onChange={(e) =>
+                setProposalData({
+                  ...proposalData,
+                  proposedAmount: e.target.value,
+                })
+              }
+            />
+
+            <input
+              type="text"
+              placeholder="Estimated Time (e.g. 4 hours)"
+              className="w-full p-3 border rounded-lg"
+              value={proposalData.estimatedTime}
+              onChange={(e) =>
+                setProposalData({
+                  ...proposalData,
+                  estimatedTime: e.target.value,
+                })
+              }
+            />
+          </div>
+        )}
+
+        {/* ACTION BUTTON */}
+        <div className="mt-6">
           {!requested ? (
             <button
               onClick={handleRequestFix}
-              className="w-full sm:w-auto px-6 py-3 rounded-xl text-white font-medium
-              bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90 transition"
+              className="px-6 py-3 rounded-xl text-white font-medium
+              bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90"
             >
               Send Fix Request
             </button>
           ) : (
             <button
-              onClick={handleCancelRequest}
-              className="w-full sm:w-auto px-6 py-3 rounded-xl text-red-600 font-medium
-              border border-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+              disabled
+              className="px-6 py-3 rounded-xl font-medium bg-gray-300 text-gray-700 cursor-not-allowed"
             >
-              Cancel Request
+              Request Sent
             </button>
           )}
         </div>
 
-        {bug.UploadedImages && bug.UploadedImages.length > 0 && (
+        {/* IMAGES */}
+        {bug.UploadedImages?.length > 0 && (
           <div className="mt-10">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+            <h2 className="text-lg font-semibold mb-3">
               Uploaded Screenshots
             </h2>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {bug.UploadedImages.map((img, index) => (
                 <img
                   key={index}
                   src={`${serverURL}/uploads/${img}`}
-                  alt="bug screenshot"
-                  className="w-full h-48 object-cover rounded-xl border border-gray-200 dark:border-gray-700"
+                  alt="bug"
+                  className="w-full h-48 object-cover rounded-xl border"
                 />
               ))}
             </div>

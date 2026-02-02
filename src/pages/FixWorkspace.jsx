@@ -1,12 +1,34 @@
 import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { getFixWorkspaceAPI } from "../services/allAPIs";
 
 function FixWorkspace() {
-  const messages = [
-    { sender: "client", text: "Hi, any update on the bug?" },
-    { sender: "debugger", text: "Yes, I identified the issue. Working on fix." },
-  ];
+  const { bugId } = useParams();
+  const [token, setToken] = useState("");
+  const [workspace, setWorkspace] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(0);
+  useEffect(() => {
+    setToken(sessionStorage.getItem("token"));
+  }, []);
+  const fetchWorkspace = async () => {
+    try {
+      const reqHeader = {
+        Authorization: `Bearer ${token}`,
+      };
+      const result = await getFixWorkspaceAPI(bugId, reqHeader);
+      if (result.status === 200) {
+        setWorkspace(result.data);
+        const seconds = Number(result.data.estimatedTime) * 3600;
+        setTimeLeft(seconds);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
-  const [timeLeft, setTimeLeft] = useState(1 * 1 * 10);
+  useEffect(() => {
+    if (token) fetchWorkspace();
+  }, [token]);
   useEffect(() => {
     if (timeLeft <= 0) return;
     const timer = setInterval(() => {
@@ -14,12 +36,21 @@ function FixWorkspace() {
     }, 1000);
     return () => clearInterval(timer);
   }, [timeLeft]);
+
   const formatTime = (seconds) => {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
     return `${h}h ${m}m ${s}s`;
   };
+
+  if (!workspace) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
+        Loading workspace...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 md:p-10">
@@ -29,7 +60,7 @@ function FixWorkspace() {
             Fix Workspace
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Track progress and communicate with the client
+            Track progress of the assigned fix
           </p>
         </div>
 
@@ -42,88 +73,48 @@ function FixWorkspace() {
       </div>
       <div className="max-w-6xl mx-auto bg-white dark:bg-gray-800 border rounded-xl p-6 mb-8">
         <h2 className="text-xl font-semibold mb-2">
-          Login API returns 500 error
+          {workspace.title}
         </h2>
 
         <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
-          <span> Backend</span>
-          <span> ₹800</span>
-          <span> In Progress</span>
-          <span> Posted by: Athul</span>
+          <span> {workspace.category}</span>
+          <span> ₹{workspace.fixBudget}</span>
+          <span> {workspace.status}</span>
+          <span> Posted by: {workspace.userMail}</span>
+          <span> Assigned to: {workspace.assignedTo}</span>
         </div>
       </div>
       <div className="max-w-6xl mx-auto bg-white dark:bg-gray-800 border rounded-xl p-6 mb-8">
         <h3 className="text-lg font-semibold mb-4">Progress</h3>
 
         <div className="flex items-center justify-between text-sm">
-          <div className="flex-1 text-center">
-            <div className="w-8 h-8 mx-auto rounded-full bg-green-600 text-white flex items-center justify-center">
-              ✓
+          {["Assigned", "Analyzing", "Fixing", "Completed"].map((step, i) => (
+            <div key={i} className="flex-1 text-center">
+              <div
+                className={`w-8 h-8 mx-auto rounded-full flex items-center justify-center ${
+                  i < 2
+                    ? "bg-green-600 text-white"
+                    : i === 2
+                    ? "bg-yellow-500 text-white"
+                    : "bg-gray-300 text-gray-700"
+                }`}
+              >
+                {i < 2 ? "✓" : i === 2 ? "⏳" : "⏸"}
+              </div>
+              <p className="mt-2">{step}</p>
             </div>
-            <p className="mt-2">Assigned</p>
-          </div>
-
-          <div className="flex-1 text-center">
-            <div className="w-8 h-8 mx-auto rounded-full bg-green-600 text-white flex items-center justify-center">
-              ✓
-            </div>
-            <p className="mt-2">Analyzing</p>
-          </div>
-
-          <div className="flex-1 text-center">
-            <div className="w-8 h-8 mx-auto rounded-full bg-yellow-500 text-white flex items-center justify-center">
-              ⏳
-            </div>
-            <p className="mt-2">Fixing</p>
-          </div>
-
-          <div className="flex-1 text-center">
-            <div className="w-8 h-8 mx-auto rounded-full bg-gray-300 text-gray-700 flex items-center justify-center">
-              ⏸
-            </div>
-            <p className="mt-2">Completed</p>
-          </div>
+          ))}
         </div>
       </div>
       <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-6">
-
-        <div className="md:col-span-2 bg-white dark:bg-gray-800 border rounded-xl p-6 flex flex-col">
+        <div className="md:col-span-2 bg-white dark:bg-gray-800 border rounded-xl p-6">
           <h3 className="text-lg font-semibold mb-4">Discussion</h3>
-          <div className="flex-1 overflow-y-auto space-y-3 mb-4">
-            {messages.map((msg, index) => (
-              <div
-                key={index}
-                className={`max-w-xs p-3 rounded-lg text-sm ${
-                  msg.sender === "debugger"
-                    ? "bg-blue-600 text-white ml-auto"
-                    : "bg-gray-200 text-gray-800"
-                }`}
-              >
-                {msg.text}
-              </div>
-            ))}
+
+          <div className="text-sm text-gray-500">
+           
           </div>
-
-      
-          <div className="flex gap-3">
-            <input
-              type="text"
-              placeholder="Type your message..."
-              className="flex-1 p-3 border rounded-lg"
-            />
-
-            <button
-              type="button"
-              className="px-5 py-3 bg-gray-400 text-white rounded-lg"
-            >
-              Send
-            </button>
-          </div>
-
-          <p className="text-xs text-gray-500 mt-2">
-            * Messaging will be enabled after debugger selection
-          </p>
         </div>
+
         <div className="bg-white dark:bg-gray-800 border rounded-xl p-6">
           <h3 className="text-lg font-semibold mb-4">Actions</h3>
 

@@ -93,13 +93,14 @@ function App() {
 
         <Route path="/bounties" element={<Bounties />} />
         <Route path="/bounties/:id" element={<BountyDetails />} />
-        <Route path="/workspace/:id" element={<FixWorkspace />} />
+        <Route path="/workspace/:bugId" element={<FixWorkspace />} />
+
         <Route path="/mytasks" element={<MyTasks />} />
         <Route path="/debuggerwork/:id" element={<Debugger />} />
         <Route path="/post-bounty" element={<PostBounty />} />
         <Route path="/completed" element={<CompletedTasks />} />
         <Route path="/edit-error/:id" element={<EditError />} />
-        <Route path="/bug-requests/:id" element={<BugRequests />} />
+        <Route path="/bug-requests/:bugId" element={<BugRequests />} />
         <Route path="/edit-bounty/:id" element={<EditBounty />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>

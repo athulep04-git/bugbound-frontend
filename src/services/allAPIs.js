@@ -89,3 +89,31 @@ export const updateProfileAPI = async (reqBody, reqHeader) => {
 export const getLeaderboardAPI = async () => {
   return await commonAPI("GET", `${serverURL}/api/leaderboard`, {}, {});
 };
+
+// send proposal (debugger side – later)
+export const sendProposalAPI = async (reqBody, reqHeader) => {
+  return await commonAPI("POST", `${serverURL}/api/sendproposal`, reqBody, reqHeader);
+};
+
+// get proposals for a bug (owner side)
+export const getBugProposalsAPI = async (bugId, reqHeader) => {
+  return await commonAPI("GET", `${serverURL}/api/bugproposals/${bugId}`, {}, reqHeader);
+};
+
+// accept proposal
+export const acceptProposalAPI = async (proposalId, reqHeader) => {
+  return await commonAPI("PUT", `${serverURL}/api/acceptproposal/${proposalId}`, {}, reqHeader);
+};
+//fixworkspace
+export const getFixWorkspaceAPI = async (bugId, reqHeader) => {
+  return await commonAPI("GET",`${serverURL}/api/fixworkspace/${bugId}`,{},reqHeader);
+};
+//get ongoing tasks
+export const getMyTasksAPI = async (reqHeader) => {
+  return await commonAPI("GET",`${serverURL}/api/mytasks`,{},reqHeader);
+};
+
+//admin stats get
+export const getAdminStatsAPI = async (reqHeader) => {
+  return await commonAPI("GET",`${serverURL}/api/admin/stats`,{},reqHeader);
+};

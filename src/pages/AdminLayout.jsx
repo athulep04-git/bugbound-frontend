@@ -5,7 +5,7 @@ function AdminLayout() {
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
       
-      {/* SIDEBAR */}
+      
       <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 hidden md:flex flex-col">
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -41,7 +41,7 @@ function AdminLayout() {
         </div>
       </aside>
 
-      {/* MAIN CONTENT */}
+ 
       <main className="flex-1">
         <Outlet />
       </main>
