@@ -12,14 +12,13 @@ function ErrorDetails() {
   const [requested, setRequested] = useState(false);
   const [user, setUser] = useState({});
 
-  // proposal form state
   const [proposalData, setProposalData] = useState({
     message: "",
     proposedAmount: "",
     estimatedTime: "",
   });
 
-  /* ---------------- LOAD TOKEN & USER ---------------- */
+
   useEffect(() => {
     const storedUser = JSON.parse(sessionStorage.getItem("userDetails"));
     const storedToken = sessionStorage.getItem("token");
@@ -34,7 +33,7 @@ function ErrorDetails() {
     }
   }, [id]);
 
-  /* ---------------- GET BUG DETAILS ---------------- */
+
   const getBugDetails = async () => {
     const reqHeader = {
       Authorization: `Bearer ${token}`,
@@ -42,7 +41,6 @@ function ErrorDetails() {
 
     const result = await getABugAPI(id, reqHeader);
 
-    // success
     if (result?.status === 200) {
       setBug(result.data);
     } else {
@@ -56,14 +54,8 @@ function ErrorDetails() {
     }
   }, [token]);
 
-  /* ---------------- SEND PROPOSAL ---------------- */
-  const handleRequestFix = async () => {
-    // already requested (user-specific)
-    if (requested) {
-      toast.info("You have already sent a proposal for this bug");
-      return;
-    }
 
+  const handleRequestFix = async () => {
     if (!token || !user?.email) {
       toast.error("Authentication error");
       return;
@@ -76,7 +68,6 @@ function ErrorDetails() {
 
     const { message, proposedAmount, estimatedTime } = proposalData;
 
-    // validation
     if (!message || !proposedAmount || !estimatedTime) {
       toast.warn("Please fill all fields before sending request");
       return;
@@ -95,7 +86,6 @@ function ErrorDetails() {
 
     const result = await sendProposalAPI(reqBody, reqHeader);
 
-    // SUCCESS
     if (result?.status === 201 || result?.status === 200) {
       toast.success("Fix request sent successfully");
       setRequested(true);
@@ -106,19 +96,16 @@ function ErrorDetails() {
       return;
     }
 
-    // DUPLICATE (backend 400)
     if (result?.response?.status === 400) {
       toast.info(result.response.data);
       setRequested(true);
-      sessionStorage.setItem(
-        `proposal_${id}_${user.email}`,
-        "true"
-      );
       return;
     }
 
-    // UNAUTHORIZED
-    if (result?.response?.status === 403) {
+    if (
+      result?.response?.status === 401 ||
+      result?.response?.status === 403
+    ) {
       toast.warn(result.response.data);
       return;
     }
@@ -126,7 +113,7 @@ function ErrorDetails() {
     toast.error("Failed to send request");
   };
 
-  /* ---------------- LOADING ---------------- */
+
   if (!bug) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-600">
@@ -135,7 +122,6 @@ function ErrorDetails() {
     );
   }
 
-  /* ---------------- UI ---------------- */
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 md:p-10">
       <div className="max-w-5xl mx-auto mb-6">
@@ -145,7 +131,6 @@ function ErrorDetails() {
       </div>
 
       <div className="max-w-5xl mx-auto bg-white dark:bg-gray-800 border rounded-2xl p-8 shadow-sm">
-        {/* HEADER */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold">{bug.title}</h1>
@@ -159,39 +144,12 @@ function ErrorDetails() {
               {bug.category}
             </span>
 
-            <span
-              className={`px-4 py-1 rounded-full text-sm font-medium ${
-                bug.priority === "Urgent"
-                  ? "bg-red-100 text-red-600"
-                  : bug.priority === "Normal"
-                  ? "bg-yellow-100 text-yellow-700"
-                  : "bg-green-100 text-green-700"
-              }`}
-            >
-              {bug.priority}
-            </span>
-
             <span className="px-4 py-1 rounded-full text-sm bg-purple-100 text-purple-700">
               Status: {bug.status}
             </span>
           </div>
         </div>
 
-        {/* DESCRIPTION */}
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-2">Description</h2>
-          <p className="text-gray-600 whitespace-pre-line">
-            {bug.description}
-          </p>
-        </div>
-
-        {/* FIX BUDGET */}
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-2">Fix Budget</h2>
-          <p className="text-2xl font-bold">₹{bug.fixBudget}</p>
-        </div>
-
-        {/* PROPOSAL FORM */}
         {!requested && (
           <div className="mt-8 space-y-4">
             <textarea
@@ -200,10 +158,7 @@ function ErrorDetails() {
               rows={3}
               value={proposalData.message}
               onChange={(e) =>
-                setProposalData({
-                  ...proposalData,
-                  message: e.target.value,
-                })
+                setProposalData({ ...proposalData, message: e.target.value })
               }
             />
 
@@ -235,7 +190,6 @@ function ErrorDetails() {
           </div>
         )}
 
-        {/* ACTION BUTTON */}
         <div className="mt-6">
           {!requested ? (
             <button
@@ -255,7 +209,6 @@ function ErrorDetails() {
           )}
         </div>
 
-        {/* IMAGES */}
         {bug.UploadedImages?.length > 0 && (
           <div className="mt-10">
             <h2 className="text-lg font-semibold mb-3">

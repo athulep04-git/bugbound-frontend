@@ -5,6 +5,7 @@ import {
   getMyBugsAPI,
   getMyBountiesAPI,
   deleteBugAPI,
+  deleteBountyAPI,
 } from "../services/allAPIs";
 
 function MyErrors() {
@@ -20,30 +21,18 @@ function MyErrors() {
   }, []);
 
   const getMyBugs = async () => {
-    try {
-      const reqHeader = {
-        Authorization: `Bearer ${token}`,
-      };
-      const result = await getMyBugsAPI(reqHeader);
-      if (result.status === 200) {
-        setMyBugs(result.data);
-      }
-    } catch (err) {
-      console.log(err);
+    const reqHeader = { Authorization: `Bearer ${token}` };
+    const result = await getMyBugsAPI(reqHeader);
+    if (result.status === 200) {
+      setMyBugs(result.data);
     }
   };
 
   const getMyBounties = async () => {
-    try {
-      const reqHeader = {
-        Authorization: `Bearer ${token}`,
-      };
-      const result = await getMyBountiesAPI(reqHeader);
-      if (result.status === 200) {
-        setMyBounties(result.data);
-      }
-    } catch (err) {
-      console.log(err);
+    const reqHeader = { Authorization: `Bearer ${token}` };
+    const result = await getMyBountiesAPI(reqHeader);
+    if (result.status === 200) {
+      setMyBounties(result.data);
     }
   };
 
@@ -54,10 +43,10 @@ function MyErrors() {
     }
   }, [token]);
 
-  const handleDelete = async (type, id) => {
+  const handleDeleteBug = (id) => {
     Swal.fire({
       title: "Are you sure?",
-      text: "This action cannot be undone!",
+      text: "This bug will be deleted permanently!",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#dc2626",
@@ -65,25 +54,36 @@ function MyErrors() {
       confirmButtonText: "Yes, delete it",
     }).then(async (result) => {
       if (result.isConfirmed) {
-        try {
-          const reqHeader = {
-            Authorization: `Bearer ${token}`,
-          };
+        const reqHeader = { Authorization: `Bearer ${token}` };
+        const res = await deleteBugAPI(id, reqHeader);
 
-          if (type === "bug") {
-            const res = await deleteBugAPI(id, reqHeader);
+        if (res.status === 200) {
+          setMyBugs((prev) => prev.filter((bug) => bug._id !== id));
+          Swal.fire("Deleted!", "Bug deleted successfully.", "success");
+        }
+      }
+    });
+  };
 
-            if (res.status === 200) {
-              setMyBugs((prev) =>
-                prev.filter((item) => item._id !== id)
-              );
+  const handleDeleteBounty = (id) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "This bounty will be deleted permanently!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, delete it",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const reqHeader = { Authorization: `Bearer ${token}` };
+        const res = await deleteBountyAPI(id, reqHeader);
 
-              Swal.fire("Deleted!", "Bug deleted successfully.", "success");
-            }
-          }
-        } catch (err) {
-          Swal.fire("Error", "Delete failed", "error");
-          console.log(err);
+        if (res.status === 200) {
+          setMyBounties((prev) =>
+            prev.filter((bounty) => bounty._id !== id)
+          );
+          Swal.fire("Deleted!", "Bounty deleted successfully.", "success");
         }
       }
     });
@@ -104,7 +104,7 @@ function MyErrors() {
               : "bg-white border"
           }`}
         >
-           My Errors
+          My Errors
         </button>
 
         <button
@@ -115,124 +115,99 @@ function MyErrors() {
               : "bg-white border"
           }`}
         >
-           My Bounties
+          My Bounties
         </button>
       </div>
 
       <div className="max-w-4xl mx-auto space-y-6">
-        {activeTab === "errors" && (
-          <>
-            {myBugs.length > 0 ? (
-              myBugs.map((bug) => (
+
+        {activeTab === "errors" &&
+          (myBugs.length ? (
+            myBugs.map((bug) => (
+              <div
+                key={bug._id}
+                onClick={() => navigate(`/workspace/${bug._id}`)}
+                className="cursor-pointer bg-white border rounded-xl p-6
+                           flex justify-between hover:shadow-lg transition"
+              >
+                <div>
+                  <h3 className="text-xl font-semibold">{bug.title}</h3>
+                  <p className="text-sm text-gray-600">
+                    {bug.category} • ₹{bug.fixBudget}
+                  </p>
+                </div>
+
                 <div
-                  key={bug._id}
-                  onClick={() => navigate(`/workspace/${bug._id}`)}
-                  className="cursor-pointer bg-white dark:bg-gray-800 border rounded-xl p-6
-                             flex justify-between items-start
-                             hover:shadow-lg hover:border-blue-500 transition"
+                  className="flex flex-col gap-2 items-end"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  <div>
-                    <h3 className="text-xl font-semibold">{bug.title}</h3>
-
-                    <p className="text-sm text-gray-600 mt-1">
-                      {bug.category} • ₹{bug.fixBudget}
-                    </p>
-
-                    <span className="inline-block mt-2 px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-600">
-                      {bug.status || "Open"}
-                    </span>
-                  </div>
-
-                  <div
-                    className="flex flex-col items-end gap-2"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => navigate(`/edit-error/${bug._id}`)}
-                        className="px-3 py-1 bg-gray-200 rounded"
-                      >
-                        ✏️
-                      </button>
-
-                      <button
-                        onClick={() => handleDelete("bug", bug._id)}
-                        className="px-3 py-1 bg-red-600 text-white rounded"
-                      >
-                        🗑️ 
-                      </button>
-                    </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => navigate(`/edit-error/${bug._id}`)}
+                      className="px-3 py-1 bg-gray-200 rounded"
+                    >
+                      ✏️
+                    </button>
 
                     <button
-                      onClick={() => navigate(`/bug-requests/${bug._id}`)}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                      onClick={() => handleDeleteBug(bug._id)}
+                      className="px-3 py-1 bg-red-600 text-white rounded"
                     >
-                      View Requests
+                      🗑️
                     </button>
                   </div>
+
+                  <button
+                    onClick={() => navigate(`/bug-requests/${bug._id}`)}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                  >
+                    View Requests
+                  </button>
                 </div>
-              ))
-            ) : (
-              <p className="text-center text-gray-600 dark:text-gray-400">
-                No errors posted yet.
-              </p>
-            )}
-          </>
-        )}
+              </div>
+            ))
+          ) : (
+            <p className="text-center text-gray-500">
+              No errors posted yet.
+            </p>
+          ))}
 
-        {activeTab === "bounties" && (
-          <>
-            {myBounties.length > 0 ? (
-              myBounties.map((bounty) => (
-                <div
-                  key={bounty._id}
-                  className="bg-white dark:bg-gray-800 border rounded-xl p-6 flex justify-between items-start"
-                >
-                  <div>
-                    <h3 className="text-xl font-semibold">{bounty.title}</h3>
-
-                    <p className="text-sm text-gray-600 mt-1">
-                      {bounty.category} • ₹{bounty.reward}
-                    </p>
-
-                    <span className="inline-block mt-2 px-3 py-1 text-xs rounded-full bg-green-100 text-green-600">
-                      {bounty.status || "Active"}
-                    </span>
-                  </div>
-
-                  <div className="flex flex-col items-end gap-2">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => navigate(`/edit-bounty/${bounty._id}`)}
-                        className="px-3 py-1 bg-gray-200 rounded"
-                      >
-                        ✏️
-                      </button>
-
-                      <button
-                        onClick={() => handleDelete("bounty", bounty._id)}
-                        className="px-3 py-1 bg-red-600 text-white rounded"
-                      >
-                        🗑️
-                      </button>
-                    </div>
-
-                    <Link
-                      to={`/bounties/${bounty._id}`}
-                      className="text-sm text-blue-600"
-                    >
-                      View Reports →
-                    </Link>
-                  </div>
+        {activeTab === "bounties" &&
+          (myBounties.length ? (
+            myBounties.map((bounty) => (
+              <div
+                key={bounty._id}
+                className="bg-white border rounded-xl p-6 flex justify-between"
+              >
+                <div>
+                  <h3 className="text-xl font-semibold">{bounty.title}</h3>
+                  <p className="text-sm text-gray-600">
+                    {bounty.category} • ₹{bounty.reward}
+                  </p>
                 </div>
-              ))
-            ) : (
-              <p className="text-center text-gray-600 dark:text-gray-400">
-                No bounties posted yet.
-              </p>
-            )}
-          </>
-        )}
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => navigate(`/edit-bounty/${bounty._id}`)}
+                    className="px-3 py-1 bg-gray-200 rounded"
+                  >
+                    ✏️
+                  </button>
+
+                  <button
+                    onClick={() => handleDeleteBounty(bounty._id)}
+                    className="px-3 py-1 bg-red-600 text-white rounded"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-center text-gray-500">
+              No bounties posted yet.
+            </p>
+          ))}
       </div>
     </div>
   );

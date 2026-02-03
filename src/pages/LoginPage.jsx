@@ -13,7 +13,6 @@ function LoginPage() {
     email: "",
     password: "",
   });
-
   const handleLogin = async () => {
     const { email, password } = userData;
 
@@ -55,6 +54,16 @@ function LoginPage() {
         }, 2500);
       }
     } catch (err) {
+      if (err?.response?.status === 403) {
+        toast.error(err.response.data, {
+          position: "top-center",
+          autoClose: 4000,
+          theme: "colored",
+          transition: Bounce,
+        });
+        return;
+      }
+
       toast.warn(err?.response?.data || "Login failed", {
         position: "top-center",
         autoClose: 4000,
@@ -110,6 +119,16 @@ function LoginPage() {
         }, 2500);
       }
     } catch (err) {
+      if (err?.response?.status === 403) {
+        toast.error(err.response.data, {
+          position: "top-center",
+          autoClose: 4000,
+          theme: "colored",
+          transition: Bounce,
+        });
+        return;
+      }
+
       toast.warn(err?.response?.data || "Google login failed", {
         position: "top-center",
         autoClose: 4000,
@@ -130,15 +149,8 @@ function LoginPage() {
     >
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
 
-      <div
-        className="relative w-full max-w-md p-8 bg-white/95 shadow-2xl
-                      border border-gray-200 rounded-2xl"
-      >
-        <h2
-          className="text-3xl font-bold text-center mb-6
-                       bg-gradient-to-r from-blue-600 to-purple-600
-                       text-transparent bg-clip-text"
-        >
+      <div className="relative w-full max-w-md p-8 bg-white/95 shadow-2xl border rounded-2xl">
+        <h2 className="text-3xl font-bold text-center mb-6 bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text">
           Login
         </h2>
 
@@ -147,9 +159,10 @@ function LoginPage() {
             type="email"
             placeholder="Email"
             value={userData.email}
-            onChange={(e) => setUserData({ ...userData, email: e.target.value })}
-            className="w-full p-3 rounded-lg border border-gray-300
-                       outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e) =>
+              setUserData({ ...userData, email: e.target.value })
+            }
+            className="w-full p-3 rounded-lg border outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           <input
@@ -159,40 +172,32 @@ function LoginPage() {
             onChange={(e) =>
               setUserData({ ...userData, password: e.target.value })
             }
-            className="w-full p-3 rounded-lg border border-gray-300
-                       outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full p-3 rounded-lg border outline-none focus:ring-2 focus:ring-purple-500"
           />
 
           <button
             type="button"
             onClick={handleLogin}
-            className="w-full py-3 rounded-lg text-white
-                       bg-gradient-to-r from-blue-600 to-purple-600
-                       hover:opacity-90 transition font-medium"
+            className="w-full py-3 rounded-lg text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90 font-medium"
           >
             Login
           </button>
 
           <GoogleLogin
             onSuccess={handleGoogleLogin}
-            onError={() => {
+            onError={() =>
               toast.warn("Google Login Failed", {
                 position: "top-center",
                 autoClose: 3000,
                 theme: "colored",
                 transition: Bounce,
-              });
-            }}
+              })
+            }
           />
         </form>
       </div>
 
-      <ToastContainer
-        position="top-center"
-        autoClose={5000}
-        theme="colored"
-        transition={Bounce}
-      />
+      <ToastContainer />
     </div>
   );
 }

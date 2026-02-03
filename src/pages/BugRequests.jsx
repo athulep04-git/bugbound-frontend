@@ -15,22 +15,23 @@ function BugRequests() {
   }, []);
 
   const fetchProposals = async () => {
-    try {
-      const reqHeader = {
-        Authorization: `Bearer ${token}`,
-      };
+    const reqHeader = {
+      Authorization: `Bearer ${token}`,
+    };
 
-      const result = await getBugProposalsAPI(bugId, reqHeader);
+    const result = await getBugProposalsAPI(bugId, reqHeader);
 
-      if (result.status === 200) {
-        setProposals(result.data);
-        console.log(result);
-        
-      }
-    } catch (err) {
-      console.log(err);
-      toast.error("Failed to load proposals");
+    if (result?.status === 200) {
+      setProposals(result.data);
+      return;
     }
+
+    if (result?.response?.status === 401 || result?.response?.status === 403) {
+      toast.warn(result.response.data);
+      return;
+    }
+
+    toast.error("Failed to load proposals");
   };
 
   useEffect(() => {
@@ -40,20 +41,29 @@ function BugRequests() {
   }, [token]);
 
   const handleAccept = async (proposalId) => {
-    try {
-      const reqHeader = {
-        Authorization: `Bearer ${token}`,
-      };
+    const reqHeader = {
+      Authorization: `Bearer ${token}`,
+    };
 
-      const result = await acceptProposalAPI(proposalId, reqHeader);
+    const result = await acceptProposalAPI(proposalId, reqHeader);
 
-      if (result.status === 200) {
-        toast.success("Proposal accepted");
-        navigate(`/workspace/${bugId}`);
-      }
-    } catch (err) {
-      toast.error("Failed to accept proposal");
+    if (result?.status === 200) {
+      toast.success("Proposal accepted");
+      navigate(`/workspace/${bugId}`);
+      return;
     }
+
+    if (result?.response?.status === 400) {
+      toast.warn(result.response.data);
+      return;
+    }
+
+    if (result?.response?.status === 401 || result?.response?.status === 403) {
+      toast.error(result.response.data);
+      return;
+    }
+
+    toast.error("Failed to accept proposal");
   };
 
   return (

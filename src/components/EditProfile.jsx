@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Modal, Button, TextInput, Textarea } from "flowbite-react";
 import { updateProfileAPI } from "../services/allAPIs";
 import { toast } from "react-toastify";
+import { serverURL } from "../services/serverURL";
 
-const SERVER_URL = "http://localhost:3000";
 
 function EditProfile({ open, onClose }) {
   const [token, setToken] = useState("");
@@ -22,7 +22,6 @@ function EditProfile({ open, onClose }) {
     bio: "",
     password: "",
   });
-
   useEffect(() => {
     if (!open) return;
 
@@ -44,9 +43,12 @@ function EditProfile({ open, onClose }) {
 
       setFormData(data);
       setInitialData(data);
-
       if (storedUser.profile) {
-        setPreview(`${SERVER_URL}/uploads/${storedUser.profile}`);
+        if (storedUser.profile.startsWith("http")) {
+          setPreview(storedUser.profile); // Google image
+        } else {
+          setPreview(`${serverURL}/uploads/${storedUser.profile}`); // Uploaded image
+        }
       } else {
         setPreview("");
       }
@@ -67,14 +69,17 @@ function EditProfile({ open, onClose }) {
       setPreview(URL.createObjectURL(file));
     }
   };
-
   const handleCancel = () => {
     setFormData(initialData);
     setProfilePic(null);
 
     const storedUser = JSON.parse(sessionStorage.getItem("userDetails"));
     if (storedUser?.profile) {
-      setPreview(`${SERVER_URL}/uploads/${storedUser.profile}`);
+      if (storedUser.profile.startsWith("http")) {
+        setPreview(storedUser.profile);
+      } else {
+        setPreview(`${serverURL}/uploads/${storedUser.profile}`);
+      }
     } else {
       setPreview("");
     }
@@ -125,7 +130,7 @@ function EditProfile({ open, onClose }) {
               "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_640.png"
             }
             alt="profile"
-            className="w-24 h-24 rounded-full border"
+            className="w-24 h-24 rounded-full border object-cover"
           />
 
           <label className="cursor-pointer px-4 py-2 bg-gray-100 rounded-lg text-sm">
@@ -134,17 +139,51 @@ function EditProfile({ open, onClose }) {
           </label>
         </div>
 
+  
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <TextInput name="username" value={formData.username} onChange={handleChange} placeholder="Full Name" />
+          <TextInput
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            placeholder="Full Name"
+          />
+
           <TextInput name="email" value={formData.email} disabled />
 
-          <TextInput name="title" value={formData.title} onChange={handleChange} placeholder="Role / Title" />
-          <TextInput name="location" value={formData.location} onChange={handleChange} placeholder="Location" />
+          <TextInput
+            name="title"
+            value={formData.title}
+            onChange={handleChange}
+            placeholder="Role / Title"
+          />
 
-          <TextInput name="github" value={formData.github} onChange={handleChange} placeholder="GitHub URL" />
-          <TextInput name="linkedin" value={formData.linkedin} onChange={handleChange} placeholder="LinkedIn URL" />
+          <TextInput
+            name="location"
+            value={formData.location}
+            onChange={handleChange}
+            placeholder="Location"
+          />
 
-          <TextInput name="skills" value={formData.skills} onChange={handleChange} placeholder="Skills" />
+          <TextInput
+            name="github"
+            value={formData.github}
+            onChange={handleChange}
+            placeholder="GitHub URL"
+          />
+
+          <TextInput
+            name="linkedin"
+            value={formData.linkedin}
+            onChange={handleChange}
+            placeholder="LinkedIn URL"
+          />
+
+          <TextInput
+            name="skills"
+            value={formData.skills}
+            onChange={handleChange}
+            placeholder="Skills"
+          />
 
           <TextInput
             type="password"
@@ -164,13 +203,15 @@ function EditProfile({ open, onClose }) {
             placeholder="Short bio"
           />
         </div>
-
         <div className="mt-8 flex justify-end gap-3">
           <Button color="gray" onClick={handleCancel}>
             Cancel
           </Button>
 
-          <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={handleUpdate}>
+          <Button
+            className="bg-green-600 hover:bg-green-700 text-white"
+            onClick={handleUpdate}
+          >
             Save Changes
           </Button>
         </div>

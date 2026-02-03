@@ -26,7 +26,6 @@ import Contact from "./pages/Contact";
 import Bounties from "./pages/Bounties";
 import BountyDetails from "./pages/BountyDetails";
 import PostBounty from "./pages/PostBounty";
-import FixWorkspace from "./pages/FixWorkSpace";
 import Debugger from "./pages/Debugger";
 import MyTasks from "./pages/MyTasks";
 import CompletedTasks from "./pages/CompletedTasks";
@@ -38,6 +37,7 @@ import AdminSettings from "./pages/AdminSettings";
 import EditError from "./pages/EditError";
 import BugRequests from "./pages/BugRequests";
 import EditBounty from "./pages/EditBounty";
+import FixWorkspace from "./pages/FixWorkspace";
 
 function App() {
 
@@ -93,7 +93,7 @@ function App() {
 
         <Route path="/bounties" element={<Bounties />} />
         <Route path="/bounties/:id" element={<BountyDetails />} />
-        <Route path="/workspace/:bugId" element={<FixWorkspace />} />
+        <Route path="/workspace/:bugId" element={<FixWorkspace/>} />
 
         <Route path="/mytasks" element={<MyTasks />} />
         <Route path="/debuggerwork/:id" element={<Debugger />} />

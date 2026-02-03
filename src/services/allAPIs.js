@@ -74,6 +74,10 @@ export const editBountyAPI = async (id, reqBody, reqHeader) => {
 export const deleteBugAPI = async (id, reqHeader) => {
   return await commonAPI("DELETE",`${serverURL}/api/deletebug/${id}`,{},reqHeader);
 };
+//delete bounty
+export const deleteBountyAPI = async (id,reqHeader) => {
+  return await commonAPI("DELETE",`${serverURL}/api/deletebounty/${id}`,{},reqHeader);
+};
 
 //getlogin user details
 export const getUserProfileAPI = async (reqHeader)=> {
@@ -117,3 +121,18 @@ export const getMyTasksAPI = async (reqHeader) => {
 export const getAdminStatsAPI = async (reqHeader) => {
   return await commonAPI("GET",`${serverURL}/api/admin/stats`,{},reqHeader);
 };
+// get all users (admin)
+export const getAllUsersAPI = async (reqHeader) => {
+  return await commonAPI("GET",`${serverURL}/api/admin/users`,{},reqHeader);
+};
+
+// block user
+export const blockUserAPI = async (id, reqHeader) => {
+  return await commonAPI("PUT",`${serverURL}/api/admin/block/${id}`,{},reqHeader);
+};
+
+// unblock user
+export const unblockUserAPI = async (id, reqHeader) => {
+  return await commonAPI("PUT",`${serverURL}/api/admin/unblock/${id}`,{},reqHeader);
+};
+
