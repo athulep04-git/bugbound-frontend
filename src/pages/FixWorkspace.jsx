@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import {
   getFixWorkspaceAPI,
@@ -8,6 +8,7 @@ import {
 } from "../services/allAPIs";
 import { toast } from "react-toastify";
 import RatingModal from "../components/RatingModal";
+import { io } from "socket.io-client";
 
 function FixWorkspace() {
   const { bugId } = useParams();
@@ -18,6 +19,11 @@ function FixWorkspace() {
   const [isDebugger, setIsDebugger] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
   const [showRating, setShowRating] = useState(false);
+
+  const [messages, setMessages] = useState([]);
+  const [message, setMessage] = useState("");
+
+  const socketRef = useRef(null);
 
   useEffect(() => {
     const storedToken = sessionStorage.getItem("token");
@@ -51,33 +57,49 @@ function FixWorkspace() {
     return () => clearInterval(timer);
   }, [timeLeft]);
 
+  useEffect(() => {
+    socketRef.current = io("http://localhost:3000");
+    socketRef.current.emit("joinRoom", { bugId });
+
+    socketRef.current.on("receiveMessage", (msg) => {
+      setMessages((prev) => [...prev, msg]);
+    });
+
+    return () => socketRef.current.disconnect();
+  }, [bugId]);
+
+  const sendMessage = () => {
+    if (!message.trim()) return;
+    const user = JSON.parse(sessionStorage.getItem("userDetails"));
+    socketRef.current.emit("sendMessage", {
+      bugId,
+      sender: user.email,
+      text: message,
+    });
+    setMessage("");
+  };
+
   const handleMarkFixed = async () => {
     const reqHeader = { Authorization: `Bearer ${token}` };
     const result = await markBugFixedAPI(bugId, reqHeader);
-
     if (result.status === 200) {
       toast.success("Bug marked as fixed");
       fetchWorkspace();
-    } else {
-      toast.error("Action failed");
     }
   };
 
   const handleApprove = async () => {
     const reqHeader = { Authorization: `Bearer ${token}` };
     const result = await approveBugAPI(bugId, reqHeader);
-
     if (result.status === 200) {
       toast.success("Bug completed successfully");
       fetchWorkspace();
-    } else {
-      toast.error("Approval failed");
     }
   };
 
   const getStepIndex = () => {
     if (workspace.status === "Open") return 1;
-    if (workspace.status === "In Progress") return 3;
+    if (workspace.status === "In Progress") return 2;
     if (workspace.status === "Fixed") return 3;
     if (workspace.status === "Completed") return 4;
     return 0;
@@ -100,7 +122,6 @@ function FixWorkspace() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 md:p-10">
-
       {workspace.status === "Fixed" && isOwner && (
         <div className="max-w-6xl mx-auto mb-6 p-4 rounded-xl bg-yellow-100 text-yellow-800 border">
           Debugger marked this bug as fixed. Please review and approve.
@@ -110,12 +131,6 @@ function FixWorkspace() {
       {workspace.status === "Fixed" && isDebugger && (
         <div className="max-w-6xl mx-auto mb-6 p-4 rounded-xl bg-blue-100 text-blue-800 border">
           Waiting for bug owner approval.
-        </div>
-      )}
-
-      {workspace.status === "Completed" && isDebugger && workspace.ratingGiven && (
-        <div className="max-w-6xl mx-auto mb-6 p-4 rounded-xl bg-purple-100 text-purple-800 border">
-          ⭐ You have received a rating for this fix!
         </div>
       )}
 
@@ -184,6 +199,32 @@ function FixWorkspace() {
       <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-6">
         <div className="md:col-span-2 bg-white border rounded-xl p-6">
           <h3 className="text-lg font-semibold mb-4">Discussion</h3>
+
+          <div className="h-56 overflow-y-auto border rounded-lg p-3 mb-3 text-sm">
+            {messages.length === 0 && (
+              <p className="text-gray-500">No messages yet</p>
+            )}
+            {messages.map((msg, index) => (
+              <div key={index} className="mb-2">
+                <span className="font-semibold">{msg.sender}</span>: {msg.text}
+              </div>
+            ))}
+          </div>
+
+          <div className="flex gap-2">
+            <input
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              className="flex-1 border rounded-lg px-3 py-2 text-sm"
+              placeholder="Type a message..."
+            />
+            <button
+              onClick={sendMessage}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm"
+            >
+              Send
+            </button>
+          </div>
         </div>
 
         <div className="bg-white border rounded-xl p-6">
@@ -208,12 +249,21 @@ function FixWorkspace() {
           )}
 
           {workspace.status === "Completed" && isOwner && (
-            <button
-              onClick={() => setShowRating(true)}
-              className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg"
-            >
-              Rate Debugger ⭐
-            </button>
+            <>
+              <button
+                onClick={() => setShowRating(true)}
+                className="w-full mb-3 px-4 py-2 bg-purple-600 text-white rounded-lg"
+              >
+                Rate Debugger 
+              </button>
+
+              <button
+                
+                className="w-full px-4 py-2 bg-green-600 text-white rounded-lg"
+              >
+                Release Payment 
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -224,20 +274,13 @@ function FixWorkspace() {
         onSubmit={async (stars) => {
           const reqHeader = { Authorization: `Bearer ${token}` };
           const result = await submitRatingAPI(
-            {
-              bugId,
-              debuggerMail: workspace.assignedTo,
-              rating: stars,
-            },
-            reqHeader
+            { bugId, debuggerMail: workspace.assignedTo, rating: stars },
+            reqHeader,
           );
-
           if (result.status === 200) {
             toast.success("Rating submitted");
             setShowRating(false);
             fetchWorkspace();
-          } else {
-            toast.error("Rating failed");
           }
         }}
       />

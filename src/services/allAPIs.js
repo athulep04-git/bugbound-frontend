@@ -149,3 +149,8 @@ export const approveBugAPI = async (bugId, reqHeader) => {
 export const submitRatingAPI = async (reqBody, reqHeader) => {
   return await commonAPI("POST",`${serverURL}/api/rate-debugger`,reqBody,reqHeader);
 };
+
+// get old messages for fix workspace
+export const getMessagesAPI = async (bugId, reqHeader) => {
+  return await commonAPI("GET",`${serverURL}/api/messages/${bugId}`,{},reqHeader);
+};
