@@ -136,3 +136,16 @@ export const unblockUserAPI = async (id, reqHeader) => {
   return await commonAPI("PUT",`${serverURL}/api/admin/unblock/${id}`,{},reqHeader);
 };
 
+//fixworkspace mark
+export const markBugFixedAPI = async (bugId, reqHeader) => {
+  return await commonAPI("PUT",`${serverURL}/api/mark-fixed/${bugId}`,{},reqHeader);
+};
+//approve
+export const approveBugAPI = async (bugId, reqHeader) => {
+  return await commonAPI("PUT",`${serverURL}/api/approve-fix/${bugId}`,{},reqHeader);
+};
+
+//rating
+export const submitRatingAPI = async (reqBody, reqHeader) => {
+  return await commonAPI("POST",`${serverURL}/api/rate-debugger`,reqBody,reqHeader);
+};

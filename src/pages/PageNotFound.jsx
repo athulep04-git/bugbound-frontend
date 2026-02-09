@@ -9,7 +9,6 @@ function PageNotFound() {
                  dark:from-gray-900 dark:to-gray-800
                  text-center px-6"
     >
-      {/* GIF */}
       <img
         src="https://static.wixstatic.com/media/8b3992_0a73511e2ff84d8fa3cd109284e28645~mv2.gif"
         alt="Page not found"
@@ -23,12 +22,11 @@ function PageNotFound() {
         "
       />
 
-      {/* Message */}
       <p className="text-lg sm:text-xl text-gray-700 dark:text-gray-300 mb-6 max-w-md">
         Oops! The page you’re looking for doesn’t exist or was moved.
       </p>
 
-      {/* Button */}
+
       <Link
         to="/"
         className="px-7 py-3 rounded-xl
