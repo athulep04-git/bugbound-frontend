@@ -38,6 +38,8 @@ import EditError from "./pages/EditError";
 import BugRequests from "./pages/BugRequests";
 import EditBounty from "./pages/EditBounty";
 import FixWorkspace from "./pages/FixWorkspace";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentFailed from "./pages/paymentFailed";
 
 function App() {
 
@@ -102,7 +104,10 @@ function App() {
         <Route path="/edit-error/:id" element={<EditError />} />
         <Route path="/bug-requests/:bugId" element={<BugRequests />} />
         <Route path="/edit-bounty/:id" element={<EditBounty />} />
+        <Route path="/payment-success" element={<PaymentSuccess />} />
+        <Route path="/payment-fail" element={<PaymentFailed />} />
         <Route path="*" element={<PageNotFound />} />
+
       </Routes>
     </div>
 

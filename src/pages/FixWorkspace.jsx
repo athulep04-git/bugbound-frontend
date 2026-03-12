@@ -87,7 +87,11 @@ function FixWorkspace() {
       fetchWorkspace();
     }
   };
-
+  const handlePayment=async()=>{
+    alert("payment")
+    console.log(workspace);
+    
+  }
   const handleApprove = async () => {
     const reqHeader = { Authorization: `Bearer ${token}` };
     const result = await approveBugAPI(bugId, reqHeader);
@@ -248,23 +252,23 @@ function FixWorkspace() {
             </button>
           )}
 
-          {workspace.status === "Completed" && isOwner && (
-            <>
-              <button
-                onClick={() => setShowRating(true)}
-                className="w-full mb-3 px-4 py-2 bg-purple-600 text-white rounded-lg"
-              >
-                Rate Debugger 
-              </button>
+          {workspace.status === "Completed" && isOwner && !workspace.paymentDone && (
+  <button
+    onClick={handlePayment}
+    className="w-full mb-3 px-4 py-2 bg-green-600 text-white rounded-lg"
+  >
+    Release Payment
+  </button>
+)}
 
-              <button
-                
-                className="w-full px-4 py-2 bg-green-600 text-white rounded-lg"
-              >
-                Release Payment 
-              </button>
-            </>
-          )}
+{workspace.paymentDone && !workspace.ratingGiven && isOwner && (
+  <button
+    onClick={() => setShowRating(true)}
+    className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg"
+  >
+    Rate Debugger
+  </button>
+)}
         </div>
       </div>
 

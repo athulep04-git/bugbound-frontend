@@ -154,3 +154,8 @@ export const submitRatingAPI = async (reqBody, reqHeader) => {
 export const getMessagesAPI = async (bugId, reqHeader) => {
   return await commonAPI("GET",`${serverURL}/api/messages/${bugId}`,{},reqHeader);
 };
+
+//payment
+export const paymentAPI = async(reqBody,reqHeader)=>{
+    return await commonAPI('PUT',`${serverURL}/api/makepayment`,reqBody,reqHeader)
+}
