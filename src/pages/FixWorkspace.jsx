@@ -5,10 +5,12 @@ import {
   markBugFixedAPI,
   approveBugAPI,
   submitRatingAPI,
+  paymentAPI,
 } from "../services/allAPIs";
 import { toast } from "react-toastify";
 import RatingModal from "../components/RatingModal";
 import { io } from "socket.io-client";
+import {loadStripe} from '@stripe/stripe-js';
 
 function FixWorkspace() {
   const { bugId } = useParams();
@@ -90,7 +92,24 @@ function FixWorkspace() {
   const handlePayment=async()=>{
     alert("payment")
     console.log(workspace);
-    
+    const stripe = await loadStripe('');
+    console.log(stripe);
+    //api call
+    const reqHeader = { 
+      Authorization: `Bearer ${token}` 
+    };
+    const reqBody={
+      workspaceDetails:workspace
+    }
+    try{
+      const response=await paymentAPI(reqBody,reqHeader)
+      console.log(response);
+      
+    }
+    catch(err){
+      console.log(err);
+      
+    }
   }
   const handleApprove = async () => {
     const reqHeader = { Authorization: `Bearer ${token}` };
