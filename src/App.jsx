@@ -104,8 +104,8 @@ function App() {
         <Route path="/edit-error/:id" element={<EditError />} />
         <Route path="/bug-requests/:bugId" element={<BugRequests />} />
         <Route path="/edit-bounty/:id" element={<EditBounty />} />
-        <Route path="/payment-success" element={<PaymentSuccess />} />
-        <Route path="/payment-fail" element={<PaymentFailed />} />
+        <Route path="/payment-success/:bugId" element={<PaymentSuccess />} />
+        <Route path="/payment-fail/:bugId" element={<PaymentFailed />} />
         <Route path="*" element={<PageNotFound />} />
 
       </Routes>

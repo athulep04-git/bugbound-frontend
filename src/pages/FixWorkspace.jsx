@@ -92,9 +92,9 @@ function FixWorkspace() {
   const handlePayment=async()=>{
     alert("payment")
     console.log(workspace);
-    const stripe = await loadStripe('');
+    const stripe = await loadStripe(import.meta.env.VITE_STRIPE_KEY);
     console.log(stripe);
-    //api call
+     //api call
     const reqHeader = { 
       Authorization: `Bearer ${token}` 
     };
@@ -104,7 +104,12 @@ function FixWorkspace() {
     try{
       const response=await paymentAPI(reqBody,reqHeader)
       console.log(response);
-      
+      // const sessionId=response.data.sessionId
+      const checkOutUrl=response.data.session.url
+      window.location.href=checkOutUrl
+      // stripe.initCheckout({
+      //   sessionId:sessionId
+      // })
     }
     catch(err){
       console.log(err);
@@ -159,7 +164,7 @@ function FixWorkspace() {
 
       {workspace.status === "Completed" && (
         <div className="max-w-6xl mx-auto mb-6 p-4 rounded-xl bg-green-100 text-green-800 border">
-          Bug successfully completed 🎉
+          Bug successfully completed 
         </div>
       )}
 

@@ -159,3 +159,7 @@ export const getMessagesAPI = async (bugId, reqHeader) => {
 export const paymentAPI = async(reqBody,reqHeader)=>{
     return await commonAPI('PUT',`${serverURL}/api/makepayment`,reqBody,reqHeader)
 }
+
+export const confirmPaymentAPI = (bugId,reqHeader) => {
+  return commonAPI("PUT",`${serverURL}/api/confirm-payment/${bugId}`,{},reqHeader);
+};
