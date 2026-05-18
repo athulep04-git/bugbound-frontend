@@ -44,8 +44,10 @@ function FixWorkspace() {
 
     if (result.status === 200) {
       setWorkspace(result.data);
-      const hours = parseInt(result.data.estimatedTime);
-      if (!isNaN(hours)) setTimeLeft(hours * 3600);
+      const deadline = new Date(result.data.deadline).getTime();
+      const remainingSeconds = Math.max(Math.floor((deadline - Date.now()) / 1000),0);
+
+setTimeLeft(remainingSeconds);
     }
   };
 
@@ -90,7 +92,6 @@ function FixWorkspace() {
     }
   };
   const handlePayment=async()=>{
-    alert("payment")
     console.log(workspace);
     const stripe = await loadStripe(import.meta.env.VITE_STRIPE_KEY);
     console.log(stripe);
@@ -104,12 +105,9 @@ function FixWorkspace() {
     try{
       const response=await paymentAPI(reqBody,reqHeader)
       console.log(response);
-      // const sessionId=response.data.sessionId
       const checkOutUrl=response.data.session.url
       window.location.href=checkOutUrl
-      // stripe.initCheckout({
-      //   sessionId:sessionId
-      // })
+   
     }
     catch(err){
       console.log(err);
