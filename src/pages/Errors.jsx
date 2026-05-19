@@ -9,6 +9,10 @@ function Errors() {
   const [tempBugs, setTempBugs] = useState([]);
   // search state
   const [searchKey, setSearchKey] = useState("");
+  const [category, setCategory] = useState("No-filter");
+  const [priority, setPriority] = useState("All");
+  const [sort, setSort] = useState("None");
+  const [showAll, setShowAll] =useState(false);
   useEffect(() => {
     setToken(sessionStorage.getItem("token"));
   }, []);
@@ -31,32 +35,37 @@ function Errors() {
       getAllBugs();
     }
   }, [token]);
-  const handleFilter = (value) => {
-    console.log(value);
-
-    if (value === "No-filter") {
-      setAllBugs(tempBugs);
-      return;
-    }
-    const result = tempBugs.filter(
-      (item) =>
-        item.category.toLowerCase().trim() === value.toLowerCase().trim()
-    );
-
-    setAllBugs(result);
-  };
+  
   useEffect(() => {
-    if (searchKey.trim() === "") {
-      setAllBugs(tempBugs);
-    } else {
-      const result = tempBugs.filter(
-        (item) =>
-          item.title.toLowerCase().includes(searchKey.toLowerCase()) ||
-          item.description.toLowerCase().includes(searchKey.toLowerCase())
-      );
-      setAllBugs(result);
-    }
-  },[searchKey]);
+  let filtered = tempBugs;
+  // search
+  if (searchKey !== "") {
+    filtered = filtered.filter((item) =>item.title.toLowerCase().includes(searchKey.toLowerCase()) ||item.description.toLowerCase().includes(searchKey.toLowerCase()));
+  }
+  // category
+  if (category !== "No-filter") {
+    filtered = filtered.filter((item) => item.category === category);
+  }
+  // priority
+  if (priority !== "All") {
+    filtered = filtered.filter((item) => item.priority === priority);
+  }
+  // hide completed by default
+if (!showAll) {
+  filtered = filtered.filter((item) =>item.status == "Open");
+}
+  // sort
+if (sort === "Newest") {
+  filtered = [...filtered].sort((a, b) =>new Date(b.createdAt) -new Date(a.createdAt));
+}
+if (sort === "High") {
+  filtered = [...filtered].sort((a, b) =>b.fixBudget - a.fixBudget);
+}
+if (sort === "Low") {
+  filtered = [...filtered].sort((a, b) =>a.fixBudget - b.fixBudget);
+}
+  setAllBugs(filtered);
+}, [searchKey, category, priority,sort, tempBugs,showAll]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 md:p-10">
@@ -97,7 +106,7 @@ function Errors() {
 
               <select
                 className="p-3 border rounded-lg"
-                onChange={(e) => handleFilter(e.target.value)}
+                onChange={(e) => setCategory(e.target.value)}
               >
                 <option value="No-filter">All Categories</option>
                 <option value="Frontend">Frontend</option>
@@ -107,19 +116,25 @@ function Errors() {
                 <option value="Deployment">Deployment</option>
               </select>
 
-              <select className="p-3 border rounded-lg">
-                <option>All Priorities</option>
-                <option>Urgent</option>
-                <option>Normal</option>
-                <option>Low</option>
+              <select className="p-3 border rounded-lg"
+               onChange={(e) => setPriority(e.target.value)}>
+                <option value="All">All Priorities</option>
+                <option value="Urgent">Urgent</option>
+                <option value="Normal">Normal</option>
+                <option value="Low">Low</option>
               </select>
 
-              <select className="p-3 border rounded-lg">
+              <select className="p-3 border rounded-lg"
+              onChange={(e) => setSort(e.target.value)}>
                 <option>Sort By</option>
-                <option>Newest</option>
-                <option>Budget: High → Low</option>
-                <option>Budget: Low → High</option>
+                <option value="Newest">Newest</option>
+                <option value="High">Budget: High → Low</option>
+                <option value="Low">Budget: Low → High</option>
               </select>
+              <div className="flex items-center gap-2">
+              <input type="checkbox"checked={showAll}onChange={(e) =>setShowAll(e.target.checked)}/>
+              <label>Include Closed / Ongoing</label>
+          </div>
             </div>
           </div>
 
@@ -135,7 +150,7 @@ function Errors() {
                     src={
                       bug?.UploadedImages?.length > 0
                         ? `${serverURL}/uploads/${bug.UploadedImages[0]}`
-                        : "https://via.placeholder.com/400x250?text=No+Image"
+                        : "https://dummyimage.com/400x250/e5e7eb/6b7280&text=No+Image"
                     }
                     alt="bug"
                     className="w-full h-44 object-cover"

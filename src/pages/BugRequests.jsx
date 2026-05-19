@@ -22,6 +22,8 @@ function BugRequests() {
     const result = await getBugProposalsAPI(bugId, reqHeader);
 
     if (result?.status === 200) {
+      console.log(result.data);
+      
       setProposals(result.data);
       return;
     }
